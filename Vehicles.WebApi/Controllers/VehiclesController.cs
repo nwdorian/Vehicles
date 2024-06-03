@@ -14,7 +14,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetAsync()
+    public async Task<ActionResult> GetAllAsync()
     {
         try
         {
@@ -63,7 +63,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> Get(Guid id)
+    public async Task<ActionResult> GetAsync(Guid id)
     {
         try
         {
@@ -84,16 +84,15 @@ public class VehiclesController : ControllerBase
 
             if (readerAsync.HasRows)
             {
-                if (await readerAsync.ReadAsync())
-                {
-                    vehicle.Id = Guid.Parse(readerAsync[0].ToString());
-                    vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
-                    vehicle.Model = readerAsync[2].ToString();
-                    vehicle.Color = readerAsync[3].ToString();
-                    vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
-                    vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
-                    vehicleFound = true;
-                }
+                await readerAsync.ReadAsync();
+
+                vehicle.Id = Guid.Parse(readerAsync[0].ToString());
+                vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
+                vehicle.Model = readerAsync[2].ToString();
+                vehicle.Color = readerAsync[3].ToString();
+                vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
+                vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
+                vehicleFound = true;
             }
 
             await connection.CloseAsync();
@@ -112,7 +111,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Insert(Vehicle vehicle)
+    public async Task<ActionResult> InsertAsync(Vehicle vehicle)
     {
         try
         {
@@ -150,7 +149,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(Guid id)
+    public async Task<ActionResult> DeleteAsync(Guid id)
     {
         try
         {
@@ -184,7 +183,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, Vehicle vehicle)
+    public async Task<ActionResult> UpdateAsync(Guid id, Vehicle vehicle)
     {
         try
         {
