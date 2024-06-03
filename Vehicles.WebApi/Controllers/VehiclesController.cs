@@ -14,7 +14,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult Get()
+    public async Task<ActionResult> GetAsync()
     {
         try
         {
@@ -26,25 +26,27 @@ public class VehiclesController : ControllerBase
 
             using var command = new NpgsqlCommand(commandText, connection);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var reader = command.ExecuteReader();
+            var readerAsync = await command.ExecuteReaderAsync();
 
-            if (reader.HasRows)
+            if (readerAsync.HasRows)
             {
-                while (reader.Read())
+                while (readerAsync.Read())
                 {
                     vehicles.Add(new Vehicle
                     {
-                        Id = Guid.Parse(reader[0].ToString()),
-                        MakeId = Guid.TryParse(reader[1].ToString(), out var result) ? result : null,
-                        Model = reader[2].ToString(),
-                        Color = reader[3].ToString(),
-                        Year = DateTime.Parse(reader[4].ToString()),
-                        ForSale = bool.Parse(reader[5].ToString())
+                        Id = Guid.Parse(readerAsync[0].ToString()),
+                        MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null,
+                        Model = readerAsync[2].ToString(),
+                        Color = readerAsync[3].ToString(),
+                        Year = DateTime.Parse(readerAsync[4].ToString()),
+                        ForSale = bool.Parse(readerAsync[5].ToString())
                     });
                 }
             }
+
+            await connection.CloseAsync();
 
             if (vehicles.Count == 0)
             {
