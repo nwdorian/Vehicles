@@ -63,7 +63,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult Get(Guid id)
+    public async Task<ActionResult> Get(Guid id)
     {
         try
         {
@@ -78,25 +78,25 @@ public class VehiclesController : ControllerBase
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var reader = command.ExecuteReader();
+            var readerAsync = await command.ExecuteReaderAsync();
 
-            if (reader.HasRows)
+            if (readerAsync.HasRows)
             {
-                if (reader.Read())
+                if (await readerAsync.ReadAsync())
                 {
-                    vehicle.Id = Guid.Parse(reader[0].ToString());
-                    vehicle.MakeId = Guid.TryParse(reader[1].ToString(), out var result) ? result : null;
-                    vehicle.Model = reader[2].ToString();
-                    vehicle.Color = reader[3].ToString();
-                    vehicle.Year = DateTime.Parse(reader[4].ToString());
-                    vehicle.ForSale = bool.Parse(reader[5].ToString());
+                    vehicle.Id = Guid.Parse(readerAsync[0].ToString());
+                    vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
+                    vehicle.Model = readerAsync[2].ToString();
+                    vehicle.Color = readerAsync[3].ToString();
+                    vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
+                    vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
                     vehicleFound = true;
                 }
             }
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (vehicleFound == false)
             {
