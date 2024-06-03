@@ -10,5 +10,5 @@ public class Vehicle
     public string? Colour { get; set; }
     public DateTime Year { get; set; }
     public Guid MakeId { get; set; }
-    public Make Make { get; set; }
+    public Make? Make { get; set; }
 }
