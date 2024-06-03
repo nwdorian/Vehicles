@@ -184,7 +184,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult Update(Guid id, Vehicle vehicle)
+    public async Task<ActionResult> Update(Guid id, Vehicle vehicle)
     {
         try
         {
@@ -203,11 +203,11 @@ public class VehiclesController : ControllerBase
             command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
 
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var commits = command.ExecuteNonQuery();
+            var commits = await command.ExecuteNonQueryAsync();
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (commits == 0)
             {
