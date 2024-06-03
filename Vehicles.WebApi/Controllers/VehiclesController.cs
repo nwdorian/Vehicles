@@ -14,7 +14,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetAsync()
+    public async Task<ActionResult> GetAllAsync()
     {
         try
         {
@@ -63,7 +63,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> Get(Guid id)
+    public async Task<ActionResult> GetAsync(Guid id)
     {
         try
         {
@@ -112,7 +112,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Insert(Vehicle vehicle)
+    public async Task<ActionResult> InsertAsync(Vehicle vehicle)
     {
         try
         {
@@ -150,7 +150,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(Guid id)
+    public async Task<ActionResult> DeleteAsync(Guid id)
     {
         try
         {
@@ -184,7 +184,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, Vehicle vehicle)
+    public async Task<ActionResult> UpdateAsync(Guid id, Vehicle vehicle)
     {
         try
         {
