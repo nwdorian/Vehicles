@@ -14,3 +14,6 @@ CREATE TABLE IF NOT EXISTS "Vehicle"(
 	CONSTRAINT "PK_Vehicle" PRIMARY KEY ("Id"),
 	CONSTRAINT "FK_Vehicle_Make_MakeId" FOREIGN KEY ("MakeId") REFERENCES "Make"("Id")
 );
+
+ALTER TABLE "Vehicle"
+	RENAME COLUMN "Colour" TO "Color";
