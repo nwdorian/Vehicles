@@ -150,7 +150,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete(Guid id)
+    public async Task<ActionResult> Delete(Guid id)
     {
         try
         {
@@ -163,11 +163,11 @@ public class VehiclesController : ControllerBase
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var commits = command.ExecuteNonQuery();
+            var commits = await command.ExecuteNonQueryAsync();
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (commits == 0)
             {
