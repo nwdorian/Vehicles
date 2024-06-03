@@ -32,7 +32,7 @@ public class VehiclesController : ControllerBase
 
             if (readerAsync.HasRows)
             {
-                while (readerAsync.Read())
+                while (await readerAsync.ReadAsync())
                 {
                     vehicles.Add(new Vehicle
                     {
