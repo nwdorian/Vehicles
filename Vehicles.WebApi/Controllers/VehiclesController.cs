@@ -84,16 +84,15 @@ public class VehiclesController : ControllerBase
 
             if (readerAsync.HasRows)
             {
-                if (await readerAsync.ReadAsync())
-                {
-                    vehicle.Id = Guid.Parse(readerAsync[0].ToString());
-                    vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
-                    vehicle.Model = readerAsync[2].ToString();
-                    vehicle.Color = readerAsync[3].ToString();
-                    vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
-                    vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
-                    vehicleFound = true;
-                }
+                await readerAsync.ReadAsync();
+
+                vehicle.Id = Guid.Parse(readerAsync[0].ToString());
+                vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
+                vehicle.Model = readerAsync[2].ToString();
+                vehicle.Color = readerAsync[3].ToString();
+                vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
+                vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
+                vehicleFound = true;
             }
 
             await connection.CloseAsync();
