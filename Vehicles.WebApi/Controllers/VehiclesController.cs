@@ -14,7 +14,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult Get()
+    public async Task<ActionResult> GetAsync()
     {
         try
         {
@@ -26,25 +26,27 @@ public class VehiclesController : ControllerBase
 
             using var command = new NpgsqlCommand(commandText, connection);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var reader = command.ExecuteReader();
+            var readerAsync = await command.ExecuteReaderAsync();
 
-            if (reader.HasRows)
+            if (readerAsync.HasRows)
             {
-                while (reader.Read())
+                while (await readerAsync.ReadAsync())
                 {
                     vehicles.Add(new Vehicle
                     {
-                        Id = Guid.Parse(reader[0].ToString()),
-                        MakeId = Guid.TryParse(reader[1].ToString(), out var result) ? result : null,
-                        Model = reader[2].ToString(),
-                        Color = reader[3].ToString(),
-                        Year = DateTime.Parse(reader[4].ToString()),
-                        ForSale = bool.Parse(reader[5].ToString())
+                        Id = Guid.Parse(readerAsync[0].ToString()),
+                        MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null,
+                        Model = readerAsync[2].ToString(),
+                        Color = readerAsync[3].ToString(),
+                        Year = DateTime.Parse(readerAsync[4].ToString()),
+                        ForSale = bool.Parse(readerAsync[5].ToString())
                     });
                 }
             }
+
+            await connection.CloseAsync();
 
             if (vehicles.Count == 0)
             {
@@ -61,7 +63,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult Get(Guid id)
+    public async Task<ActionResult> Get(Guid id)
     {
         try
         {
@@ -76,25 +78,25 @@ public class VehiclesController : ControllerBase
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var reader = command.ExecuteReader();
+            var readerAsync = await command.ExecuteReaderAsync();
 
-            if (reader.HasRows)
+            if (readerAsync.HasRows)
             {
-                if (reader.Read())
+                if (await readerAsync.ReadAsync())
                 {
-                    vehicle.Id = Guid.Parse(reader[0].ToString());
-                    vehicle.MakeId = Guid.TryParse(reader[1].ToString(), out var result) ? result : null;
-                    vehicle.Model = reader[2].ToString();
-                    vehicle.Color = reader[3].ToString();
-                    vehicle.Year = DateTime.Parse(reader[4].ToString());
-                    vehicle.ForSale = bool.Parse(reader[5].ToString());
+                    vehicle.Id = Guid.Parse(readerAsync[0].ToString());
+                    vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
+                    vehicle.Model = readerAsync[2].ToString();
+                    vehicle.Color = readerAsync[3].ToString();
+                    vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
+                    vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
                     vehicleFound = true;
                 }
             }
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (vehicleFound == false)
             {
@@ -110,7 +112,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Insert(Vehicle vehicle)
+    public async Task<ActionResult> Insert(Vehicle vehicle)
     {
         try
         {
@@ -128,11 +130,11 @@ public class VehiclesController : ControllerBase
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var commits = command.ExecuteNonQuery();
+            var commits = await command.ExecuteNonQueryAsync();
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (commits == 0)
             {
@@ -148,7 +150,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete(Guid id)
+    public async Task<ActionResult> Delete(Guid id)
     {
         try
         {
@@ -161,11 +163,11 @@ public class VehiclesController : ControllerBase
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var commits = command.ExecuteNonQuery();
+            var commits = await command.ExecuteNonQueryAsync();
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (commits == 0)
             {
@@ -182,7 +184,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public ActionResult Update(Guid id, Vehicle vehicle)
+    public async Task<ActionResult> Update(Guid id, Vehicle vehicle)
     {
         try
         {
@@ -201,11 +203,11 @@ public class VehiclesController : ControllerBase
             command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
 
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var commits = command.ExecuteNonQuery();
+            var commits = await command.ExecuteNonQueryAsync();
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (commits == 0)
             {
