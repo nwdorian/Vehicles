@@ -112,7 +112,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Insert(Vehicle vehicle)
+    public async Task<ActionResult> Insert(Vehicle vehicle)
     {
         try
         {
@@ -130,11 +130,11 @@ public class VehiclesController : ControllerBase
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
 
-            connection.Open();
+            await connection.OpenAsync();
 
-            var commits = command.ExecuteNonQuery();
+            var commits = await command.ExecuteNonQueryAsync();
 
-            connection.Close();
+            await connection.CloseAsync();
 
             if (commits == 0)
             {
