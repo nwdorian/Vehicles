@@ -30,7 +30,7 @@ public class VehiclesController : ControllerBase
 
             var reader = command.ExecuteReader();
 
-            while (reader.Read())
+            if (reader.HasRows)
             {
                 while (reader.Read())
                 {
@@ -66,6 +66,7 @@ public class VehiclesController : ControllerBase
         try
         {
             Vehicle vehicle = new Vehicle();
+            var vehicleFound = false;
             var connectionString = _configuration.GetConnectionString("Default");
             using var connection = new NpgsqlConnection(connectionString);
 
@@ -81,7 +82,7 @@ public class VehiclesController : ControllerBase
 
             if (reader.HasRows)
             {
-                while (reader.Read())
+                if (reader.Read())
                 {
                     vehicle.Id = Guid.Parse(reader[0].ToString());
                     vehicle.MakeId = Guid.TryParse(reader[1].ToString(), out var result) ? result : null;
@@ -89,12 +90,13 @@ public class VehiclesController : ControllerBase
                     vehicle.Color = reader[3].ToString();
                     vehicle.Year = DateTime.Parse(reader[4].ToString());
                     vehicle.ForSale = bool.Parse(reader[5].ToString());
+                    vehicleFound = true;
                 }
             }
 
             connection.Close();
 
-            if (vehicle == null)
+            if (vehicleFound == false)
             {
                 return NotFound();
             }
@@ -121,8 +123,8 @@ public class VehiclesController : ControllerBase
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
-            command.Parameters.AddWithValue("@Model", vehicle.Model.ToString());
-            command.Parameters.AddWithValue("@Color", vehicle.Color.ToString());
+            command.Parameters.AddWithValue("@Model", vehicle.Model);
+            command.Parameters.AddWithValue("@Color", vehicle.Color);
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
 
@@ -132,7 +134,7 @@ public class VehiclesController : ControllerBase
 
             connection.Close();
 
-            if (commits == -1)
+            if (commits == 0)
             {
                 return BadRequest();
             }
@@ -165,13 +167,52 @@ public class VehiclesController : ControllerBase
 
             connection.Close();
 
-            if (commits == -1)
+            if (commits == 0)
             {
                 return BadRequest();
             }
 
             return Ok("Successfully deleted");
 
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id}")]
+    public ActionResult Update(Guid id, Vehicle vehicle)
+    {
+        try
+        {
+            var connectionString = _configuration.GetConnectionString("Default");
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
+
+            using var command = new NpgsqlCommand(commandText, connection);
+
+            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
+            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model);
+            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color);
+            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
+            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
+
+
+            connection.Open();
+
+            var commits = command.ExecuteNonQuery();
+
+            connection.Close();
+
+            if (commits == 0)
+            {
+                return BadRequest();
+            }
+
+            return Ok("Successfully updated!");
         }
         catch (Exception ex)
         {
