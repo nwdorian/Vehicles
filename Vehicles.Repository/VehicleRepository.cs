@@ -15,7 +15,8 @@ public class VehicleRepository : IVehicleRepository
         {
             using var connection = new NpgsqlConnection(_connectionString);
             var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\"";
-            using var command = new NpgsqlCommand(commandText, connection);
+
+            await using var command = new NpgsqlCommand(commandText, connection);
 
             await connection.OpenAsync();
 
@@ -61,7 +62,7 @@ public class VehicleRepository : IVehicleRepository
 
             var commandText = "SELECT * FROM \"Vehicle\" WHERE \"Id\" = @Id";
 
-            using var command = new NpgsqlCommand(commandText, connection);
+            await using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
@@ -105,7 +106,7 @@ public class VehicleRepository : IVehicleRepository
 
             var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
 
-            using var command = new NpgsqlCommand(commandText, connection);
+            await using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
@@ -140,7 +141,7 @@ public class VehicleRepository : IVehicleRepository
 
             var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
 
-            using var command = new NpgsqlCommand(commandText, connection);
+            await using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
@@ -170,7 +171,7 @@ public class VehicleRepository : IVehicleRepository
 
             var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
 
-            using var command = new NpgsqlCommand(commandText, connection);
+            await using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
