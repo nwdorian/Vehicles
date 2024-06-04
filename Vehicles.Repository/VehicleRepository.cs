@@ -6,7 +6,7 @@ namespace Vehicles.Repository;
 
 public class VehicleRepository : IVehicleRepository
 {
-    private readonly string _connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
+    private readonly string _connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
     public async Task<List<Vehicle>> GetAllAsync()
     {
         List<Vehicle> vehicles = new List<Vehicle>();
@@ -33,7 +33,7 @@ public class VehicleRepository : IVehicleRepository
                     vehicle.Year = await readerAsync.IsDBNullAsync(4) ? null : readerAsync.GetDateTime(4);
                     vehicle.ForSale = readerAsync.GetBoolean(5);
 
-                    if (!await readerAsync.IsDBNullAsync(6))
+                    if (!await readerAsync.IsDBNullAsync(1))
                     {
                         vehicle.Make = new Make();
 
