@@ -60,7 +60,7 @@ public class VehicleRepository : IVehicleRepository
         {
             using var connection = new NpgsqlConnection(_connectionString);
 
-            var commandText = "SELECT * FROM \"Vehicle\" WHERE \"Id\" = @Id";
+            var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE v.\"Id\" = @Id";
 
             await using var command = new NpgsqlCommand(commandText, connection);
 
@@ -77,12 +77,20 @@ public class VehicleRepository : IVehicleRepository
 
                 await readerAsync.ReadAsync();
 
-                vehicle.Id = Guid.Parse(readerAsync[0].ToString());
-                vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
-                vehicle.Model = readerAsync[2].ToString();
-                vehicle.Color = readerAsync[3].ToString();
-                vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
-                vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
+                vehicle.Id = readerAsync.GetGuid(0);
+                vehicle.MakeId = await readerAsync.IsDBNullAsync(1) ? null : readerAsync.GetGuid(1);
+                vehicle.Model = await readerAsync.IsDBNullAsync(2) ? null : readerAsync.GetString(2);
+                vehicle.Color = readerAsync.GetString(3);
+                vehicle.Year = await readerAsync.IsDBNullAsync(4) ? null : readerAsync.GetDateTime(4);
+                vehicle.ForSale = readerAsync.GetBoolean(5);
+
+                if (!await readerAsync.IsDBNullAsync(1))
+                {
+                    vehicle.Make = new Make();
+
+                    vehicle.Make.Id = readerAsync.GetGuid(6);
+                    vehicle.Make.Name = readerAsync.GetString(7);
+                }
 
                 await connection.CloseAsync();
                 return vehicle;
@@ -110,10 +118,10 @@ public class VehicleRepository : IVehicleRepository
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
-            command.Parameters.AddWithValue("@Model", vehicle.Model);
-            command.Parameters.AddWithValue("@Color", vehicle.Color);
-            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
-            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model is null ? DBNull.Value : vehicle.Model);
+            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color!);
+            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year is null ? DBNull.Value : vehicle.Year);
+            command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, vehicle.ForSale);
 
             await connection.OpenAsync();
 
@@ -175,11 +183,10 @@ public class VehicleRepository : IVehicleRepository
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
-            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model);
-            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color);
-            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
-            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
-
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model is null ? DBNull.Value : vehicle.Model);
+            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color!);
+            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year is null ? DBNull.Value : vehicle.Year);
+            command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, vehicle.ForSale);
 
             await connection.OpenAsync();
 
