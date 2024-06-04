@@ -1,17 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Vehicles.Model;
-using Vehicles.Service;
+using Vehicles.Service.Common;
 
 namespace Vehicles.WebApi.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class VehiclesController : ControllerBase
 {
+    private readonly IVehicleService _vehicleService;
+    public VehiclesController(IVehicleService vehicleService)
+    {
+        _vehicleService = vehicleService;
+    }
     [HttpGet]
     public async Task<ActionResult> GetAllAsync()
     {
-        VehicleService vehicleService = new VehicleService();
-        var vehicles = await vehicleService.GetAllAsync();
+        var vehicles = await _vehicleService.GetAllAsync();
 
         if (!vehicles.Any())
         {
@@ -24,8 +28,7 @@ public class VehiclesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetAsync(Guid id)
     {
-        VehicleService vehicleService = new VehicleService();
-        var vehicle = await vehicleService.GetAsync(id);
+        var vehicle = await _vehicleService.GetAsync(id);
 
         if (vehicle is null)
         {
@@ -38,8 +41,7 @@ public class VehiclesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> InsertAsync(Vehicle vehicle)
     {
-        VehicleService vehicleService = new VehicleService();
-        var added = await vehicleService.InsertAsync(vehicle);
+        var added = await _vehicleService.InsertAsync(vehicle);
 
         if (!added)
         {
@@ -52,8 +54,7 @@ public class VehiclesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id)
     {
-        VehicleService vehicleService = new VehicleService();
-        var deleted = await vehicleService.DeleteAsync(id);
+        var deleted = await _vehicleService.DeleteAsync(id);
 
         if (!deleted)
         {
@@ -66,8 +67,7 @@ public class VehiclesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(Guid id, Vehicle vehicle)
     {
-        VehicleService vehicleService = new VehicleService();
-        var updated = await vehicleService.UpdateAsync(id, vehicle);
+        var updated = await _vehicleService.UpdateAsync(id, vehicle);
 
         if (!updated)
         {
