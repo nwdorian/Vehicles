@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Vehicles.Model\Vehicles.Model.csproj" />
+    <ProjectReference Include="..\Vehicles.Repository.Common\Vehicles.Repository.Common.csproj" />
     <ProjectReference Include="..\Vehicles.Repository\Vehicles.Repository.csproj" />
     <ProjectReference Include="..\Vehicles.Service.Common\Vehicles.Service.Common.csproj" />
   </ItemGroup>
