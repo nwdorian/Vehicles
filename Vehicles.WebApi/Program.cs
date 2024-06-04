@@ -12,9 +12,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var connectionString = builder.Configuration.GetConnectionString("Default") ?? "Connection string error";
+
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory(builder =>
 {
-    builder.RegisterModule(new RepositoryModule());
+    builder.RegisterModule(new RepositoryModule(connectionString));
     builder.RegisterModule(new ServiceModule());
 }));
 
