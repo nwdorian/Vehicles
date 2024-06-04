@@ -8,7 +8,7 @@ public class Vehicle
     public string? Model { get; set; }
     [Required]
     public string? Color { get; set; }
-    public DateTime Year { get; set; }
-    [Required]
+    public DateTime? Year { get; set; }
     public bool ForSale { get; set; }
+    public Make? Make { get; set; }
 }

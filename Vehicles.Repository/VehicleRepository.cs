@@ -12,10 +12,10 @@ public class VehicleRepository : IVehicleRepository
 
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
             using var connection = new NpgsqlConnection(connectionString);
 
-            var commandText = "SELECT * FROM \"Vehicle\"";
+            var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\"";
 
             using var command = new NpgsqlCommand(commandText, connection);
 
@@ -27,15 +27,24 @@ public class VehicleRepository : IVehicleRepository
             {
                 while (await readerAsync.ReadAsync())
                 {
-                    vehicles.Add(new Vehicle
+                    var vehicle = new Vehicle();
+
+                    vehicle.Id = readerAsync.GetGuid(0);
+                    vehicle.MakeId = await readerAsync.IsDBNullAsync(1) ? null : readerAsync.GetGuid(1);
+                    vehicle.Model = await readerAsync.IsDBNullAsync(2) ? null : readerAsync.GetString(2);
+                    vehicle.Color = readerAsync.GetString(3);
+                    vehicle.Year = await readerAsync.IsDBNullAsync(4) ? null : readerAsync.GetDateTime(4);
+                    vehicle.ForSale = readerAsync.GetBoolean(5);
+
+                    if (!await readerAsync.IsDBNullAsync(6))
                     {
-                        Id = Guid.Parse(readerAsync[0].ToString()),
-                        MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null,
-                        Model = readerAsync[2].ToString(),
-                        Color = readerAsync[3].ToString(),
-                        Year = DateTime.Parse(readerAsync[4].ToString()),
-                        ForSale = bool.Parse(readerAsync[5].ToString())
-                    });
+                        vehicle.Make = new Make();
+
+                        vehicle.Make.Id = readerAsync.GetGuid(6);
+                        vehicle.Make.Name = readerAsync.GetString(7);
+                    }
+
+                    vehicles.Add(vehicle);
                 }
             }
             await connection.CloseAsync();
@@ -44,7 +53,7 @@ public class VehicleRepository : IVehicleRepository
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error" + ex.Message);
+            throw new Exception("Data access error: " + ex.Message);
         }
     }
 
@@ -78,7 +87,7 @@ public class VehicleRepository : IVehicleRepository
                 vehicle.Color = readerAsync[3].ToString();
                 vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
                 vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
-                //TODO debug and check if after return goes out of if statement
+
                 await connection.CloseAsync();
                 return vehicle;
             }
