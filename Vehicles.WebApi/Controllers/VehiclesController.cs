@@ -19,7 +19,7 @@ public class VehiclesController : ControllerBase
         VehicleRepository vehicleRepository = new VehicleRepository();
         var vehicles = await vehicleRepository.GetAllAsync();
 
-        if (vehicles.Any())
+        if (!vehicles.Any())
         {
             return NotFound();
         }
