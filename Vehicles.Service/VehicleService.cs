@@ -1,42 +1,38 @@
 ﻿using Vehicles.Model;
-using Vehicles.Repository;
+using Vehicles.Repository.Common;
 using Vehicles.Service.Common;
 
 namespace Vehicles.Service;
 public class VehicleService : IVehicleService
 {
+    private readonly IVehicleRepository _vehicleRepository;
+
+    public VehicleService(IVehicleRepository vehicleRepository)
+    {
+        _vehicleRepository = vehicleRepository;
+    }
     public async Task<List<Vehicle>> GetAllAsync()
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-
-        return await vehicleRepository.GetAllAsync();
+        return await _vehicleRepository.GetAllAsync();
     }
 
     public async Task<Vehicle?> GetAsync(Guid id)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-
-        return await vehicleRepository.GetAsync(id);
+        return await _vehicleRepository.GetAsync(id);
     }
 
     public async Task<bool> InsertAsync(Vehicle vehicle)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-
-        return await vehicleRepository.InsertAsync(vehicle);
+        return await _vehicleRepository.InsertAsync(vehicle);
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-
-        return await vehicleRepository.DeleteAsync(id);
+        return await _vehicleRepository.DeleteAsync(id);
     }
 
     public async Task<bool> UpdateAsync(Guid id, Vehicle vehicle)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-
-        return await vehicleRepository.UpdateAsync(id, vehicle);
+        return await _vehicleRepository.UpdateAsync(id, vehicle);
     }
 }

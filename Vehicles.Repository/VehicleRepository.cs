@@ -6,7 +6,11 @@ namespace Vehicles.Repository;
 
 public class VehicleRepository : IVehicleRepository
 {
-    private readonly string _connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+    private readonly string _connectionString;
+    public VehicleRepository(string connectionString)
+    {
+        _connectionString = connectionString;
+    }
     public async Task<List<Vehicle>> GetAllAsync()
     {
         List<Vehicle> vehicles = new List<Vehicle>();
