@@ -90,4 +90,40 @@ public class VehiclesRepository
             throw new Exception("Data access error" + ex.Message);
         }
     }
+
+    public async Task<bool> InsertAsync(Vehicle vehicle)
+    {
+        try
+        {
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
+
+            using var command = new NpgsqlCommand(commandText, connection);
+
+            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
+            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
+            command.Parameters.AddWithValue("@Model", vehicle.Model);
+            command.Parameters.AddWithValue("@Color", vehicle.Color);
+            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
+            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
+
+            await connection.OpenAsync();
+
+            var commits = await command.ExecuteNonQueryAsync();
+
+            await connection.CloseAsync();
+
+            if (commits == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Data access error" + ex.Message);
+        }
+    }
 }

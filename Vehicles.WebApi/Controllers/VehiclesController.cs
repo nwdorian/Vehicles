@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Vehicles.Model;
 using Vehicles.Repository;
 
 namespace Vehicles.WebApi.Controllers;
@@ -43,39 +44,16 @@ public class VehiclesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> InsertAsync(Vehicle vehicle)
     {
-        try
+        VehiclesRepository vehiclesRepository = new VehiclesRepository();
+
+        var added = await vehiclesRepository.InsertAsync(vehicle);
+
+        if (added)
         {
-            var connectionString = _configuration.GetConnectionString("Default");
-            using var connection = new NpgsqlConnection(connectionString);
-
-            var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
-
-            using var command = new NpgsqlCommand(commandText, connection);
-
-            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
-            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
-            command.Parameters.AddWithValue("@Model", vehicle.Model);
-            command.Parameters.AddWithValue("@Color", vehicle.Color);
-            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
-            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
-
-            await connection.OpenAsync();
-
-            var commits = await command.ExecuteNonQueryAsync();
-
-            await connection.CloseAsync();
-
-            if (commits == 0)
-            {
-                return BadRequest();
-            }
-
-            return Ok("Successfully added");
+            return BadRequest();
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok("Successfully added");
     }
 
     [HttpDelete("{id}")]
