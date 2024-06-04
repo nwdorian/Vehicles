@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Vehicles.Model\Vehicles.Model.csproj" />
     <ProjectReference Include="..\Vehicles.Repository\Vehicles.Repository.csproj" />
+    <ProjectReference Include="..\Vehicles.Service.Common\Vehicles.Service.Common.csproj" />
   </ItemGroup>
 
 </Project>
