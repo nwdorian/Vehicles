@@ -6,23 +6,20 @@ namespace Vehicles.Repository;
 
 public class VehicleRepository : IVehicleRepository
 {
+    private readonly string _connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
     public async Task<List<Vehicle>> GetAllAsync()
     {
         List<Vehicle> vehicles = new List<Vehicle>();
 
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
-            using var connection = new NpgsqlConnection(connectionString);
-
+            using var connection = new NpgsqlConnection(_connectionString);
             var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\"";
-
             using var command = new NpgsqlCommand(commandText, connection);
 
             await connection.OpenAsync();
 
             var readerAsync = await command.ExecuteReaderAsync();
-
             if (readerAsync.HasRows)
             {
                 while (await readerAsync.ReadAsync())
@@ -43,7 +40,6 @@ public class VehicleRepository : IVehicleRepository
                         vehicle.Make.Id = readerAsync.GetGuid(6);
                         vehicle.Make.Name = readerAsync.GetString(7);
                     }
-
                     vehicles.Add(vehicle);
                 }
             }
@@ -61,8 +57,7 @@ public class VehicleRepository : IVehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
-            using var connection = new NpgsqlConnection(connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
 
             var commandText = "SELECT * FROM \"Vehicle\" WHERE \"Id\" = @Id";
 
@@ -98,7 +93,7 @@ public class VehicleRepository : IVehicleRepository
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error" + ex.Message);
+            throw new Exception("Data access error: " + ex.Message);
         }
     }
 
@@ -106,8 +101,7 @@ public class VehicleRepository : IVehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
-            using var connection = new NpgsqlConnection(connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
 
             var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
 
@@ -134,7 +128,7 @@ public class VehicleRepository : IVehicleRepository
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error" + ex.Message);
+            throw new Exception("Data access error: " + ex.Message);
         }
     }
 
@@ -142,8 +136,7 @@ public class VehicleRepository : IVehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
-            using var connection = new NpgsqlConnection(connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
 
             var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
 
@@ -165,7 +158,7 @@ public class VehicleRepository : IVehicleRepository
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error" + ex.Message);
+            throw new Exception("Data access error: " + ex.Message);
         }
     }
 
@@ -173,8 +166,7 @@ public class VehicleRepository : IVehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
-            using var connection = new NpgsqlConnection(connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
 
             var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
 
@@ -202,7 +194,7 @@ public class VehicleRepository : IVehicleRepository
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error" + ex.Message);
+            throw new Exception("Data access error: " + ex.Message);
         }
     }
 }
