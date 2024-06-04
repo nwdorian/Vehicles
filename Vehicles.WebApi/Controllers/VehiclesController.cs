@@ -7,12 +7,6 @@ namespace Vehicles.WebApi.Controllers;
 [ApiController]
 public class VehiclesController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
-    public VehiclesController(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetAllAsync()
     {
