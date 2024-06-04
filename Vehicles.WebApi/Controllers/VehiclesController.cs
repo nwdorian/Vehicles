@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Npgsql;
-using Vehicles.WebApi.Models;
+using Vehicles.Repository;
 
 namespace Vehicles.WebApi.Controllers;
 [Route("api/[controller]")]
@@ -16,98 +15,29 @@ public class VehiclesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllAsync()
     {
-        try
+        VehiclesRepository vehiclesRepository = new VehiclesRepository();
+        var vehicles = await vehiclesRepository.GetAllAsync();
+
+        if (vehicles.Any())
         {
-            List<Vehicle> vehicles = new List<Vehicle>();
-            var connectionString = _configuration.GetConnectionString("Default");
-            using var connection = new NpgsqlConnection(connectionString);
-
-            var commandText = "SELECT * FROM \"Vehicle\"";
-
-            using var command = new NpgsqlCommand(commandText, connection);
-
-            await connection.OpenAsync();
-
-            var readerAsync = await command.ExecuteReaderAsync();
-
-            if (readerAsync.HasRows)
-            {
-                while (await readerAsync.ReadAsync())
-                {
-                    vehicles.Add(new Vehicle
-                    {
-                        Id = Guid.Parse(readerAsync[0].ToString()),
-                        MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null,
-                        Model = readerAsync[2].ToString(),
-                        Color = readerAsync[3].ToString(),
-                        Year = DateTime.Parse(readerAsync[4].ToString()),
-                        ForSale = bool.Parse(readerAsync[5].ToString())
-                    });
-                }
-            }
-
-            await connection.CloseAsync();
-
-            if (vehicles.Count == 0)
-            {
-                return NotFound();
-            }
-
-            return Ok(vehicles);
-
+            return NotFound();
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok(vehicles);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult> GetAsync(Guid id)
     {
-        try
+        VehiclesRepository vehiclesRepository = new VehiclesRepository();
+        var vehicle = await vehiclesRepository.GetAsync(id);
+
+        if (vehicle is null)
         {
-            Vehicle vehicle = new Vehicle();
-            var vehicleFound = false;
-            var connectionString = _configuration.GetConnectionString("Default");
-            using var connection = new NpgsqlConnection(connectionString);
-
-            var commandText = "SELECT * FROM \"Vehicle\" WHERE \"Id\" = @Id";
-
-            using var command = new NpgsqlCommand(commandText, connection);
-
-            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
-
-            await connection.OpenAsync();
-
-            var readerAsync = await command.ExecuteReaderAsync();
-
-            if (readerAsync.HasRows)
-            {
-                await readerAsync.ReadAsync();
-
-                vehicle.Id = Guid.Parse(readerAsync[0].ToString());
-                vehicle.MakeId = Guid.TryParse(readerAsync[1].ToString(), out var result) ? result : null;
-                vehicle.Model = readerAsync[2].ToString();
-                vehicle.Color = readerAsync[3].ToString();
-                vehicle.Year = DateTime.Parse(readerAsync[4].ToString());
-                vehicle.ForSale = bool.Parse(readerAsync[5].ToString());
-                vehicleFound = true;
-            }
-
-            await connection.CloseAsync();
-
-            if (vehicleFound == false)
-            {
-                return NotFound();
-            }
-
-            return Ok(vehicle);
+            return NotFound();
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok(vehicle);
     }
 
     [HttpPost]

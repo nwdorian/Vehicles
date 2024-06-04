@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Vehicles.WebApi.Models;
-
+namespace Vehicles.Model;
 public class Vehicle
 {
     public Guid Id { get; set; }
@@ -12,5 +11,4 @@ public class Vehicle
     public DateTime Year { get; set; }
     [Required]
     public bool ForSale { get; set; }
-    public Make? Make { get; set; }
 }
