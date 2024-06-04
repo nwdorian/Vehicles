@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Vehicles.Model;
-using Vehicles.Repository;
+using Vehicles.Service;
 
 namespace Vehicles.WebApi.Controllers;
 [Route("api/[controller]")]
@@ -10,8 +10,8 @@ public class VehiclesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllAsync()
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-        var vehicles = await vehicleRepository.GetAllAsync();
+        VehicleService vehicleService = new VehicleService();
+        var vehicles = await vehicleService.GetAllAsync();
 
         if (!vehicles.Any())
         {
@@ -24,8 +24,8 @@ public class VehiclesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetAsync(Guid id)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-        var vehicle = await vehicleRepository.GetAsync(id);
+        VehicleService vehicleService = new VehicleService();
+        var vehicle = await vehicleService.GetAsync(id);
 
         if (vehicle is null)
         {
@@ -38,9 +38,8 @@ public class VehiclesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> InsertAsync(Vehicle vehicle)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-
-        var added = await vehicleRepository.InsertAsync(vehicle);
+        VehicleService vehicleService = new VehicleService();
+        var added = await vehicleService.InsertAsync(vehicle);
 
         if (!added)
         {
@@ -53,8 +52,8 @@ public class VehiclesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-        var deleted = await vehicleRepository.DeleteAsync(id);
+        VehicleService vehicleService = new VehicleService();
+        var deleted = await vehicleService.DeleteAsync(id);
 
         if (!deleted)
         {
@@ -62,14 +61,13 @@ public class VehiclesController : ControllerBase
         }
 
         return Ok("Successfully deleted");
-
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(Guid id, Vehicle vehicle)
     {
-        VehicleRepository vehicleRepository = new VehicleRepository();
-        var updated = await vehicleRepository.UpdateAsync(id, vehicle);
+        VehicleService vehicleService = new VehicleService();
+        var updated = await vehicleService.UpdateAsync(id, vehicle);
 
         if (!updated)
         {
@@ -77,6 +75,5 @@ public class VehiclesController : ControllerBase
         }
 
         return Ok("Successfully updated!");
-
     }
 }

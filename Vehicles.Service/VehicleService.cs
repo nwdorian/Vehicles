@@ -1,8 +1,9 @@
 ﻿using Vehicles.Model;
 using Vehicles.Repository;
+using Vehicles.Service.Common;
 
 namespace Vehicles.Service;
-public class VehicleService
+public class VehicleService : IVehicleService
 {
     public async Task<List<Vehicle>> GetAllAsync()
     {
