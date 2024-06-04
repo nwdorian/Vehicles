@@ -1,8 +1,10 @@
 ﻿using Npgsql;
 using Vehicles.Model;
+using Vehicles.Repository.Common;
 
 namespace Vehicles.Repository;
-public class VehicleRepository
+
+public class VehicleRepository : IVehicleRepository
 {
     public async Task<List<Vehicle>> GetAllAsync()
     {
