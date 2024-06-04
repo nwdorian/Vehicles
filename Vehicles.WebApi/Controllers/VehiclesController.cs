@@ -74,39 +74,15 @@ public class VehiclesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(Guid id, Vehicle vehicle)
     {
-        try
+        VehicleRepository vehicleRepository = new VehicleRepository();
+        var updated = await vehicleRepository.UpdateAsync(id, vehicle);
+
+        if (!updated)
         {
-            var connectionString = _configuration.GetConnectionString("Default");
-            using var connection = new NpgsqlConnection(connectionString);
-
-            var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
-
-            using var command = new NpgsqlCommand(commandText, connection);
-
-            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
-            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
-            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model);
-            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color);
-            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
-            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
-
-
-            await connection.OpenAsync();
-
-            var commits = await command.ExecuteNonQueryAsync();
-
-            await connection.CloseAsync();
-
-            if (commits == 0)
-            {
-                return BadRequest();
-            }
-
-            return Ok("Successfully updated!");
+            return BadRequest();
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok("Successfully updated!");
+
     }
 }

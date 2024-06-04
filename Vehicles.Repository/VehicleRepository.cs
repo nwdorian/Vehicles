@@ -10,7 +10,7 @@ public class VehicleRepository
 
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
             using var connection = new NpgsqlConnection(connectionString);
 
             var commandText = "SELECT * FROM \"Vehicle\"";
@@ -50,7 +50,7 @@ public class VehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
             using var connection = new NpgsqlConnection(connectionString);
 
             var commandText = "SELECT * FROM \"Vehicle\" WHERE \"Id\" = @Id";
@@ -95,7 +95,7 @@ public class VehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
             using var connection = new NpgsqlConnection(connectionString);
 
             var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
@@ -131,7 +131,7 @@ public class VehicleRepository
     {
         try
         {
-            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
             using var connection = new NpgsqlConnection(connectionString);
 
             var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
@@ -139,6 +139,43 @@ public class VehicleRepository
             using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
+
+            await connection.OpenAsync();
+
+            var commits = await command.ExecuteNonQueryAsync();
+
+            await connection.CloseAsync();
+
+            if (commits == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Data access error" + ex.Message);
+        }
+    }
+
+    public async Task<bool> UpdateAsync(Guid id, Vehicle vehicle)
+    {
+        try
+        {
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=postgresadmin;Database=VehiclesDb";
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
+
+            using var command = new NpgsqlCommand(commandText, connection);
+
+            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
+            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model);
+            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color);
+            command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
+            command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
+
 
             await connection.OpenAsync();
 
