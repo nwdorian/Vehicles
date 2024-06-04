@@ -16,8 +16,8 @@ public class VehiclesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllAsync()
     {
-        VehiclesRepository vehiclesRepository = new VehiclesRepository();
-        var vehicles = await vehiclesRepository.GetAllAsync();
+        VehicleRepository vehicleRepository = new VehicleRepository();
+        var vehicles = await vehicleRepository.GetAllAsync();
 
         if (vehicles.Any())
         {
@@ -30,8 +30,8 @@ public class VehiclesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetAsync(Guid id)
     {
-        VehiclesRepository vehiclesRepository = new VehiclesRepository();
-        var vehicle = await vehiclesRepository.GetAsync(id);
+        VehicleRepository vehicleRepository = new VehicleRepository();
+        var vehicle = await vehicleRepository.GetAsync(id);
 
         if (vehicle is null)
         {
@@ -44,11 +44,11 @@ public class VehiclesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> InsertAsync(Vehicle vehicle)
     {
-        VehiclesRepository vehiclesRepository = new VehiclesRepository();
+        VehicleRepository vehicleRepository = new VehicleRepository();
 
-        var added = await vehiclesRepository.InsertAsync(vehicle);
+        var added = await vehicleRepository.InsertAsync(vehicle);
 
-        if (added)
+        if (!added)
         {
             return BadRequest();
         }
@@ -59,35 +59,16 @@ public class VehiclesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id)
     {
-        try
+        VehicleRepository vehicleRepository = new VehicleRepository();
+        var deleted = await vehicleRepository.DeleteAsync(id);
+
+        if (!deleted)
         {
-            var connectionString = _configuration.GetConnectionString("Default");
-            using var connection = new NpgsqlConnection(connectionString);
-
-            var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
-
-            using var command = new NpgsqlCommand(commandText, connection);
-
-            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
-
-            await connection.OpenAsync();
-
-            var commits = await command.ExecuteNonQueryAsync();
-
-            await connection.CloseAsync();
-
-            if (commits == 0)
-            {
-                return BadRequest();
-            }
-
-            return Ok("Successfully deleted");
-
+            return BadRequest();
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok("Successfully deleted");
+
     }
 
     [HttpPut("{id}")]

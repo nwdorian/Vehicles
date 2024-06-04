@@ -2,7 +2,7 @@
 using Vehicles.Model;
 
 namespace Vehicles.Repository;
-public class VehiclesRepository
+public class VehicleRepository
 {
     public async Task<List<Vehicle>> GetAllAsync()
     {
@@ -108,6 +108,37 @@ public class VehiclesRepository
             command.Parameters.AddWithValue("@Color", vehicle.Color);
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", vehicle.ForSale);
+
+            await connection.OpenAsync();
+
+            var commits = await command.ExecuteNonQueryAsync();
+
+            await connection.CloseAsync();
+
+            if (commits == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Data access error" + ex.Message);
+        }
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        try
+        {
+            var connectionString = @"Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
+
+            using var command = new NpgsqlCommand(commandText, connection);
+
+            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
             await connection.OpenAsync();
 
