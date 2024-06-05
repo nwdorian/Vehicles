@@ -33,7 +33,7 @@ public class VehiclesController : ControllerBase
         sorting.OrderBy = orderBy;
         sorting.SortOrder = sortOrder;
 
-        var vehicles = await _vehicleService.GetAllAsync();
+        var vehicles = await _vehicleService.GetAllAsync(filter, paging, sorting);
 
         if (!vehicles.Any())
         {

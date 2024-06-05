@@ -1,4 +1,5 @@
-﻿using Vehicles.Model;
+﻿using Vehicles.Common;
+using Vehicles.Model;
 using Vehicles.Repository.Common;
 using Vehicles.Service.Common;
 
@@ -11,7 +12,7 @@ public class VehicleService : IVehicleService
     {
         _vehicleRepository = vehicleRepository;
     }
-    public async Task<List<Vehicle>> GetAllAsync()
+    public async Task<List<Vehicle>> GetAllAsync(Filtering filter, Paging paging, Sorting sorting)
     {
         return await _vehicleRepository.GetAllAsync();
     }
