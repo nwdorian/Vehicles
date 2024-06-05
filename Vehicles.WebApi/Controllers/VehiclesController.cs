@@ -13,7 +13,7 @@ public class VehiclesController : ControllerBase
         _vehicleService = vehicleService;
     }
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync()
+    public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, int? pageSize = null, int? pageNumber = 1, string orderBy = "name", string sortOrder = "ASC")
     {
         var vehicles = await _vehicleService.GetAllAsync();
 
