@@ -1,5 +1,5 @@
-﻿namespace Vehicles.Common;
-public class Filtering
+﻿namespace Vehicles.Common.Filters;
+public class VehicleFilter
 {
     public Guid? MakeId { get; set; }
     public string? Model { get; set; }

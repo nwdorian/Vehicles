@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Vehicles.Common;
+using Vehicles.Common.Filters;
 using Vehicles.Model;
 using Vehicles.Service.Common;
 
@@ -16,7 +17,7 @@ public class VehiclesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, string searchQuery = "", int pageSize = 10, int pageNumber = 1, string orderBy = "Model", string sortOrder = "ASC")
     {
-        Filtering filter = new Filtering();
+        VehicleFilter filter = new VehicleFilter();
         filter.MakeId = makeId;
         filter.Model = model;
         filter.Color = color;
