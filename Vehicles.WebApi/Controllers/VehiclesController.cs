@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Vehicles.Common;
 using Vehicles.Model;
 using Vehicles.Service.Common;
 
@@ -15,6 +16,17 @@ public class VehiclesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, string searchQuery = "", int? pageSize = null, int? pageNumber = 1, string orderBy = "name", string sortOrder = "ASC")
     {
+        Filtering filter = new Filtering();
+        filter.MakeId = makeId;
+        filter.Model = model;
+        filter.Color = color;
+        filter.StartDate = startDate;
+        filter.EndDate = endDate;
+        filter.ForSale = forSale;
+        filter.SearchQuery = searchQuery;
+
+
+
         var vehicles = await _vehicleService.GetAllAsync();
 
         if (!vehicles.Any())
