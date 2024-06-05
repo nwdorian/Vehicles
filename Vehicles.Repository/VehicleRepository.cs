@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Text;
 using Vehicles.Common;
 using Vehicles.Model;
 using Vehicles.Repository.Common;
@@ -19,11 +20,10 @@ public class VehicleRepository : IVehicleRepository
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\"";
+            using var command = BuildQuery(filter);
+            command.Connection = connection;
 
-            await using var command = new NpgsqlCommand(commandText, connection);
-
-            await connection.OpenAsync();
+            connection.Open();
 
             var readerAsync = await command.ExecuteReaderAsync();
             if (readerAsync.HasRows)
@@ -49,7 +49,7 @@ public class VehicleRepository : IVehicleRepository
                     vehicles.Add(vehicle);
                 }
             }
-            await connection.CloseAsync();
+            connection.Close();
 
             return vehicles;
         }
@@ -209,5 +209,28 @@ public class VehicleRepository : IVehicleRepository
         {
             throw new Exception("Data access error: " + ex.Message);
         }
+    }
+
+    private NpgsqlCommand BuildQuery(Filtering filter, Paging paging, Sorting sorting)
+    {
+        var command = new NpgsqlCommand();
+
+        var stringBuilder = new StringBuilder("SELECT v.\"Id\", v.\"MakeId\", v.\"Model\", v.\"Color\", v.\"Year\", v.\"ForSale\", m.\"Id\", m.\"Name\" FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE 1=1");
+        if (filter.Model is not null)
+        {
+            stringBuilder.Append(" WHERE v.\"Model\" = @Model");
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, filter.Model);
+        }
+        if (filter.Model is not null)
+        {
+            stringBuilder.Append(" AND ");
+        }
+
+        stringBuilder.Append(" ORDER BY m.\"Name\" = @Name @SortBy");
+        command.Parameters.AddWithValue("@Name", NpgsqlTypes.NpgsqlDbType.Varchar, sorting.OrderBy);
+
+        command.CommandText = stringBuilder.ToString();
+
+        return command;
     }
 }

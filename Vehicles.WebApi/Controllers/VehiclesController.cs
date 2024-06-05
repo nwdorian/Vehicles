@@ -14,7 +14,7 @@ public class VehiclesController : ControllerBase
         _vehicleService = vehicleService;
     }
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, string searchQuery = "", int pageSize = 10, int pageNumber = 1, string orderBy = "name", string sortOrder = "ASC")
+    public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, string searchQuery = "", int pageSize = 10, int pageNumber = 1, string orderBy = "Model", string sortOrder = "ASC")
     {
         Filtering filter = new Filtering();
         filter.MakeId = makeId;
