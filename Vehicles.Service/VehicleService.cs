@@ -14,7 +14,7 @@ public class VehicleService : IVehicleService
     }
     public async Task<List<Vehicle>> GetAllAsync(Filtering filter, Paging paging, Sorting sorting)
     {
-        return await _vehicleRepository.GetAllAsync();
+        return await _vehicleRepository.GetAllAsync(filter, paging, sorting);
     }
 
     public async Task<Vehicle?> GetAsync(Guid id)

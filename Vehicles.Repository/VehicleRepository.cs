@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using Vehicles.Common;
 using Vehicles.Model;
 using Vehicles.Repository.Common;
 
@@ -11,7 +12,7 @@ public class VehicleRepository : IVehicleRepository
     {
         _connectionString = connectionString;
     }
-    public async Task<List<Vehicle>> GetAllAsync()
+    public async Task<List<Vehicle>> GetAllAsync(Filtering filter, Paging paging, Sorting sorting)
     {
         List<Vehicle> vehicles = new List<Vehicle>();
 
