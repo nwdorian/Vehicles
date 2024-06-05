@@ -25,7 +25,9 @@ public class VehiclesController : ControllerBase
         filter.ForSale = forSale;
         filter.SearchQuery = searchQuery;
 
-
+        Sorting sorting = new Sorting();
+        sorting.OrderBy = orderBy;
+        sorting.SortOrder = sortOrder;
 
         var vehicles = await _vehicleService.GetAllAsync();
 
