@@ -17,22 +17,11 @@ public class VehiclesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, string searchQuery = "", int pageSize = 10, int pageNumber = 1, string orderBy = "Model", string sortOrder = "ASC")
     {
-        VehicleFilter filter = new VehicleFilter();
-        filter.MakeId = makeId;
-        filter.Model = model;
-        filter.Color = color;
-        filter.StartDate = startDate;
-        filter.EndDate = endDate;
-        filter.ForSale = forSale;
-        filter.SearchQuery = searchQuery;
+        VehicleFilter filter = new VehicleFilter(makeId, model, color, startDate, endDate, forSale, searchQuery);
 
-        Paging paging = new Paging();
-        paging.PageSize = pageSize;
-        paging.PageNumber = pageNumber;
+        Paging paging = new Paging(pageSize, pageNumber);
 
-        Sorting sorting = new Sorting();
-        sorting.OrderBy = orderBy;
-        sorting.SortOrder = sortOrder;
+        Sorting sorting = new Sorting(orderBy, sortOrder);
 
         var vehicles = await _vehicleService.GetAllAsync(filter, paging, sorting);
 
