@@ -21,7 +21,7 @@ public class VehicleRepository : IVehicleRepository
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            using var command = BuildQuery(filter);
+            var command = ApplyFilter(filter, paging, sorting);
             command.Connection = connection;
 
             connection.Open();
@@ -212,23 +212,49 @@ public class VehicleRepository : IVehicleRepository
         }
     }
 
-    private NpgsqlCommand BuildQuery(VehicleFilter filter, Paging paging, Sorting sorting)
+    private NpgsqlCommand ApplyFilter(VehicleFilter filter, Paging paging, Sorting sorting)
     {
         var command = new NpgsqlCommand();
 
-        var stringBuilder = new StringBuilder("SELECT v.\"Id\", v.\"MakeId\", v.\"Model\", v.\"Color\", v.\"Year\", v.\"ForSale\", m.\"Id\", m.\"Name\" FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE 1=1");
-        if (filter.Model is not null)
+        var stringBuilder = new StringBuilder("SELECT v.\"Id\", v.\"MakeId\", v.\"Model\", v.\"Color\", v.\"Year\", v.\"ForSale\", m.\"Id\", m.\"Name\" AS \"Make\" FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE 1=1");
+        if (filter.MakeId is not null)
         {
-            stringBuilder.Append(" WHERE v.\"Model\" = @Model");
-            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, filter.Model);
+            stringBuilder.Append(" AND \"MakeId\" = @MakeId");
+            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, filter.MakeId);
+
         }
         if (filter.Model is not null)
         {
-            stringBuilder.Append(" AND ");
+            stringBuilder.Append(" AND \"Model\" ILIKE @Model");
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.Model}%");
+        }
+        if (filter.Color is not null)
+        {
+            stringBuilder.Append(" AND \"Color\" ILIKE @Color");
+            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.Color}%");
+        }
+        if (filter.StartDate is not null)
+        {
+            stringBuilder.Append(" AND \"Year\" > @StartDate");
+            command.Parameters.AddWithValue("@StartDate", NpgsqlTypes.NpgsqlDbType.Timestamp, filter.StartDate);
+        }
+        if (filter.EndDate is not null)
+        {
+            stringBuilder.Append(" AND \"Year\" < @EndDate");
+            command.Parameters.AddWithValue("@EndDate", NpgsqlTypes.NpgsqlDbType.Timestamp, filter.EndDate);
+        }
+        if (filter.ForSale is not null)
+        {
+            stringBuilder.Append(" AND \"ForSale\" = @ForSale");
+            command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, filter.ForSale);
         }
 
-        stringBuilder.Append(" ORDER BY m.\"Name\" = @Name @SortBy");
-        command.Parameters.AddWithValue("@Name", NpgsqlTypes.NpgsqlDbType.Varchar, sorting.OrderBy);
+        var sortOrder = sorting.SortOrder.ToUpper() == "ASC" ? "ASC" : "DESC";
+        stringBuilder.Append($" ORDER BY \"{sorting.OrderBy}\" {sortOrder}");
+
+        stringBuilder.Append(" OFFSET @Skip FETCH NEXT @PageSize ROWS ONLY");
+        command.Parameters.AddWithValue("@Skip", NpgsqlTypes.NpgsqlDbType.Integer, (paging.PageNumber - 1) * paging.PageSize);
+        command.Parameters.AddWithValue("@PageSize", NpgsqlTypes.NpgsqlDbType.Integer, paging.PageSize);
 
         command.CommandText = stringBuilder.ToString();
 
