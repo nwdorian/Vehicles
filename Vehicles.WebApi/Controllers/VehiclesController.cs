@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Vehicles.Common;
+using Vehicles.Common.Filters;
 using Vehicles.Model;
 using Vehicles.Service.Common;
 
@@ -13,9 +15,9 @@ public class VehiclesController : ControllerBase
         _vehicleService = vehicleService;
     }
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync()
+    public async Task<ActionResult> GetAllAsync([FromQuery] VehicleFilter filter, [FromQuery] Paging paging, [FromQuery] Sorting sorting)
     {
-        var vehicles = await _vehicleService.GetAllAsync();
+        var vehicles = await _vehicleService.GetAllAsync(filter, paging, sorting);
 
         if (!vehicles.Any())
         {

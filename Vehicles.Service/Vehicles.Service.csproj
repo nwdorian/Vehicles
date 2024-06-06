@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Vehicles.Common\Vehicles.Common.csproj" />
     <ProjectReference Include="..\Vehicles.Model\Vehicles.Model.csproj" />
     <ProjectReference Include="..\Vehicles.Repository.Common\Vehicles.Repository.Common.csproj" />
     <ProjectReference Include="..\Vehicles.Repository\Vehicles.Repository.csproj" />
