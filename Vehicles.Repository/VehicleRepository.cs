@@ -1,4 +1,8 @@
 ﻿using Npgsql;
+using System.Globalization;
+using System.Text;
+using Vehicles.Common;
+using Vehicles.Common.Filters;
 using Vehicles.Model;
 using Vehicles.Repository.Common;
 
@@ -11,18 +15,17 @@ public class VehicleRepository : IVehicleRepository
     {
         _connectionString = connectionString;
     }
-    public async Task<List<Vehicle>> GetAllAsync()
+    public async Task<List<Vehicle>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting)
     {
         List<Vehicle> vehicles = new List<Vehicle>();
 
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\"";
+            var command = ApplyFilter(filter, paging, sorting);
+            command.Connection = connection;
 
-            await using var command = new NpgsqlCommand(commandText, connection);
-
-            await connection.OpenAsync();
+            connection.Open();
 
             var readerAsync = await command.ExecuteReaderAsync();
             if (readerAsync.HasRows)
@@ -48,7 +51,7 @@ public class VehicleRepository : IVehicleRepository
                     vehicles.Add(vehicle);
                 }
             }
-            await connection.CloseAsync();
+            connection.Close();
 
             return vehicles;
         }
@@ -208,5 +211,64 @@ public class VehicleRepository : IVehicleRepository
         {
             throw new Exception("Data access error: " + ex.Message);
         }
+    }
+
+    private NpgsqlCommand ApplyFilter(VehicleFilter filter, Paging paging, Sorting sorting)
+    {
+        var command = new NpgsqlCommand();
+
+        var stringBuilder = new StringBuilder("SELECT v.\"Id\", v.\"MakeId\", v.\"Model\", v.\"Color\", v.\"Year\", v.\"ForSale\", m.\"Id\", m.\"Name\" AS \"Make\" FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE 1=1");
+        if (filter.MakeId is not null)
+        {
+            stringBuilder.Append(" AND \"MakeId\" = @MakeId");
+            command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, filter.MakeId);
+
+        }
+        if (filter.Model is not null)
+        {
+            stringBuilder.Append(" AND \"Model\" ILIKE @Model");
+            command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.Model}%");
+        }
+        if (filter.Color is not null)
+        {
+            stringBuilder.Append(" AND \"Color\" ILIKE @Color");
+            command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.Color}%");
+        }
+        if (filter.StartDate is not null)
+        {
+            stringBuilder.Append(" AND \"Year\" > @StartDate");
+            command.Parameters.AddWithValue("@StartDate", NpgsqlTypes.NpgsqlDbType.Timestamp, filter.StartDate);
+        }
+        if (filter.EndDate is not null)
+        {
+            stringBuilder.Append(" AND \"Year\" < @EndDate");
+            command.Parameters.AddWithValue("@EndDate", NpgsqlTypes.NpgsqlDbType.Timestamp, filter.EndDate);
+        }
+        if (filter.ForSale is not null)
+        {
+            stringBuilder.Append(" AND \"ForSale\" = @ForSale");
+            command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, filter.ForSale);
+        }
+        if (DateTime.TryParseExact(filter.SearchQuery?.Trim(), "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            stringBuilder.Append(" AND TO_CHAR(\"Year\", 'YYYY') = @SearchQuery");
+            command.Parameters.AddWithValue("@SearchQuery", NpgsqlTypes.NpgsqlDbType.Varchar, date.Year.ToString());
+        }
+        if (!string.IsNullOrEmpty(filter.SearchQuery) && !DateTime.TryParseExact(filter.SearchQuery?.Trim(), "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+        {
+            stringBuilder.Append(" AND \"Model\" ILIKE @SearchQuery OR \"Color\" ILIKE @SearchQuery OR m.\"Name\" ILIKE @SearchQuery");
+            command.Parameters.AddWithValue("@SearchQuery", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.SearchQuery.Trim()}%");
+        }
+
+        var sortOrder = sorting.SortOrder?.ToUpper() == "ASC" ? "ASC" : "DESC";
+        stringBuilder.Append($" ORDER BY \"{sorting.OrderBy}\" {sortOrder}");
+
+        stringBuilder.Append(" OFFSET @Skip FETCH NEXT @PageSize ROWS ONLY");
+        command.Parameters.AddWithValue("@Skip", NpgsqlTypes.NpgsqlDbType.Integer, (paging.PageNumber - 1) * paging.PageSize);
+        command.Parameters.AddWithValue("@PageSize", NpgsqlTypes.NpgsqlDbType.Integer, paging.PageSize);
+
+        command.CommandText = stringBuilder.ToString();
+
+        return command;
     }
 }
