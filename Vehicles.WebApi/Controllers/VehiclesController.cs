@@ -15,10 +15,8 @@ public class VehiclesController : ControllerBase
         _vehicleService = vehicleService;
     }
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync([FromQuery] VehicleFilter filter, [FromQuery] Paging paging, string orderBy = "Make", string sortOrder = "ASC")
+    public async Task<ActionResult> GetAllAsync([FromQuery] VehicleFilter filter, [FromQuery] Paging paging, [FromQuery] Sorting sorting)
     {
-        Sorting sorting = new Sorting(orderBy, sortOrder);
-
         var vehicles = await _vehicleService.GetAllAsync(filter, paging, sorting);
 
         if (!vehicles.Any())
