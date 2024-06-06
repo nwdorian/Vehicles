@@ -15,10 +15,8 @@ public class VehiclesController : ControllerBase
         _vehicleService = vehicleService;
     }
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync(Guid? makeId = null, string? model = null, string? color = null, DateTime? startDate = null, DateTime? endDate = null, bool? forSale = null, string searchQuery = "", int pageSize = 10, int pageNumber = 1, string orderBy = "Make", string sortOrder = "ASC")
+    public async Task<ActionResult> GetAllAsync([FromQuery] VehicleFilter filter, int pageSize = 10, int pageNumber = 1, string orderBy = "Make", string sortOrder = "ASC")
     {
-        VehicleFilter filter = new VehicleFilter(makeId, model, color, startDate, endDate, forSale, searchQuery);
-
         Paging paging = new Paging(pageSize, pageNumber);
 
         Sorting sorting = new Sorting(orderBy, sortOrder);
