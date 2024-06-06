@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Globalization;
 using System.Text;
 using Vehicles.Common;
 using Vehicles.Common.Filters;
@@ -248,13 +249,18 @@ public class VehicleRepository : IVehicleRepository
             stringBuilder.Append(" AND \"ForSale\" = @ForSale");
             command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, filter.ForSale);
         }
-        if (!string.IsNullOrEmpty(filter.SearchQuery))
+        if (DateTime.TryParseExact(filter.SearchQuery?.Trim(), "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            stringBuilder.Append(" AND TO_CHAR(\"Year\", 'YYYY') = @SearchQuery");
+            command.Parameters.AddWithValue("@SearchQuery", NpgsqlTypes.NpgsqlDbType.Varchar, date.Year.ToString());
+        }
+        if (!string.IsNullOrEmpty(filter.SearchQuery) && !DateTime.TryParseExact(filter.SearchQuery?.Trim(), "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
         {
             stringBuilder.Append(" AND \"Model\" ILIKE @SearchQuery OR \"Color\" ILIKE @SearchQuery OR m.\"Name\" ILIKE @SearchQuery");
             command.Parameters.AddWithValue("@SearchQuery", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.SearchQuery.Trim()}%");
         }
 
-        var sortOrder = sorting.SortOrder.ToUpper() == "ASC" ? "ASC" : "DESC";
+        var sortOrder = sorting.SortOrder?.ToUpper() == "ASC" ? "ASC" : "DESC";
         stringBuilder.Append($" ORDER BY \"{sorting.OrderBy}\" {sortOrder}");
 
         stringBuilder.Append(" OFFSET @Skip FETCH NEXT @PageSize ROWS ONLY");
