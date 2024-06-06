@@ -7,5 +7,5 @@ public class VehicleFilter
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool? ForSale { get; set; }
-    public string? SearchQuery { get; set; }
+    public string? SearchQuery { get; set; } = string.Empty;
 }
