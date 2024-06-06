@@ -248,6 +248,11 @@ public class VehicleRepository : IVehicleRepository
             stringBuilder.Append(" AND \"ForSale\" = @ForSale");
             command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, filter.ForSale);
         }
+        if (!string.IsNullOrEmpty(filter.SearchQuery))
+        {
+            stringBuilder.Append(" AND \"Model\" ILIKE @SearchQuery OR \"Color\" ILIKE @SearchQuery OR m.\"Name\" ILIKE @SearchQuery");
+            command.Parameters.AddWithValue("@SearchQuery", NpgsqlTypes.NpgsqlDbType.Varchar, $"%{filter.SearchQuery.Trim()}%");
+        }
 
         var sortOrder = sorting.SortOrder.ToUpper() == "ASC" ? "ASC" : "DESC";
         stringBuilder.Append($" ORDER BY \"{sorting.OrderBy}\" {sortOrder}");
