@@ -11,5 +11,4 @@ public abstract class AssemblyScanModule : Module
         builder.RegisterAssemblyTypes(Assembly)
             .AsImplementedInterfaces();
     }
-
 }
