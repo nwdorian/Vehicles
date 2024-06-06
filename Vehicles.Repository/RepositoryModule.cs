@@ -2,15 +2,14 @@
 using Vehicles.Repository.Common;
 
 namespace Vehicles.Repository;
-public class RepositoryModule : Module
+public class RepositoryModule : Module /*AssemblyScanModule*/
 {
-    private readonly string _connectionString;
-    public RepositoryModule(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
+    //protected override Assembly Assembly => Assembly.GetExecutingAssembly();
+
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<VehicleRepository>().As<IVehicleRepository>().WithParameter("connectionString", _connectionString);
+        builder.RegisterType<VehicleRepository>().As<IVehicleRepository>().InstancePerLifetimeScope();
+
+        //base.Load(builder);
     }
 }

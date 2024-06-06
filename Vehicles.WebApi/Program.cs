@@ -1,24 +1,32 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Vehicles.Repository;
-using Vehicles.Service;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+//builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.RegisterAutoFacModules());
+
+
 // Add services to the container.
+
+string pathToAssemblies = @"C:\Users\Dorian\Documents\GitHub\Vehicles\Vehicles.WebApi\bin\Debug\net8.0";
+var allFiles = Directory.GetFiles(pathToAssemblies, "*.dll");
+var assemblies = allFiles.Select(file => Assembly.LoadFrom(file)).ToArray();
+
+foreach (var assembly in assemblies)
+{
+    builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.RegisterAssemblyModules(assembly));
+}
+
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("Default") ?? "Connection string error";
 
-builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory(builder =>
-{
-    builder.RegisterModule(new RepositoryModule(connectionString));
-    builder.RegisterModule(new ServiceModule());
-}));
 
 var app = builder.Build();
 

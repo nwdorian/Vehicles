@@ -2,7 +2,8 @@
 using Autofac.Core;
 using System.Reflection;
 
-namespace Vehicles.Common.Autofac;
+namespace Vehicles.WebApi;
+
 public static class ContainerBuilderExtensions
 {
     public static void RegisterAutoFacModules(this ContainerBuilder builder)

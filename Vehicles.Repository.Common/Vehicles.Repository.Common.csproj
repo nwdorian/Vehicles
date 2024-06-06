@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Vehicles.Common\Vehicles.Common.csproj" />
     <ProjectReference Include="..\Vehicles.Model\Vehicles.Model.csproj" />
   </ItemGroup>
