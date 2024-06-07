@@ -4,20 +4,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.WebApi", "Vehicles.WebApi\Vehicles.WebApi.csproj", "{0812BD57-089C-4529-925E-C7C4C77341F4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F49D3E45-338D-4FCA-B6E0-DDB27A3DEC35} = {F49D3E45-338D-4FCA-B6E0-DDB27A3DEC35}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.Repository", "Vehicles.Repository\Vehicles.Repository.csproj", "{DF4070F3-5DD8-4BFF-B20A-CA8C65337470}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.Repository", "Vehicles.Repository\Vehicles.Repository.csproj", "{DF4070F3-5DD8-4BFF-B20A-CA8C65337470}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.Model", "Vehicles.Model\Vehicles.Model.csproj", "{B4411323-BC88-471A-BD49-A0D559248F69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.Model", "Vehicles.Model\Vehicles.Model.csproj", "{B4411323-BC88-471A-BD49-A0D559248F69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.Repository.Common", "Vehicles.Repository.Common\Vehicles.Repository.Common.csproj", "{AAA6BF30-6CDD-475B-8B61-0CE37A0E3DAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.Repository.Common", "Vehicles.Repository.Common\Vehicles.Repository.Common.csproj", "{AAA6BF30-6CDD-475B-8B61-0CE37A0E3DAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.Service", "Vehicles.Service\Vehicles.Service.csproj", "{F49D3E45-338D-4FCA-B6E0-DDB27A3DEC35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.Service", "Vehicles.Service\Vehicles.Service.csproj", "{F49D3E45-338D-4FCA-B6E0-DDB27A3DEC35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.Service.Common", "Vehicles.Service.Common\Vehicles.Service.Common.csproj", "{9BB42D23-37F1-4A8C-B02C-BC362334A476}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.Service.Common", "Vehicles.Service.Common\Vehicles.Service.Common.csproj", "{9BB42D23-37F1-4A8C-B02C-BC362334A476}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.Common", "Vehicles.Common\Vehicles.Common.csproj", "{8C56F704-DCDD-4C7E-AFE9-12167D4C8C08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.Common", "Vehicles.Common\Vehicles.Common.csproj", "{8C56F704-DCDD-4C7E-AFE9-12167D4C8C08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vehicles.DAL", "Vehicles.DAL\Vehicles.DAL.csproj", "{E83F32CD-675E-45DA-8EA5-5AF9E70A7804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vehicles.DAL", "Vehicles.DAL\Vehicles.DAL.csproj", "{E83F32CD-675E-45DA-8EA5-5AF9E70A7804}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
