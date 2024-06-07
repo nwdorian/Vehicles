@@ -10,13 +10,16 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 // Add services to the container.
 
-string pathToAssemblies = @"C:\Users\Dorian\Documents\GitHub\Vehicles\Vehicles.WebApi\bin\Debug\net8.0";
+string pathToAssemblies = @"C:\Users\student\Documents\Dorian\P05\Vehicles\Vehicles.WebApi\bin\Debug\net8.0";
 var allFiles = Directory.GetFiles(pathToAssemblies, "*.dll");
 var assemblies = allFiles.Select(file => Assembly.LoadFrom(file)).ToArray();
 
 foreach (var assembly in assemblies)
 {
-    builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.RegisterAssemblyModules(assembly));
+    builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
+    {
+        builder.RegisterAssemblyModules(assembly);
+    });
 }
 
 

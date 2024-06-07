@@ -2,14 +2,10 @@
 using Vehicles.Repository.Common;
 
 namespace Vehicles.Repository;
-public class RepositoryModule : Module /*AssemblyScanModule*/
+public class RepositoryModule : Module
 {
-    //protected override Assembly Assembly => Assembly.GetExecutingAssembly();
-
     protected override void Load(ContainerBuilder builder)
     {
         builder.RegisterType<VehicleRepository>().As<IVehicleRepository>().InstancePerLifetimeScope();
-
-        //base.Load(builder);
     }
 }

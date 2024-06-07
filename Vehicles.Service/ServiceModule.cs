@@ -2,15 +2,11 @@
 using Vehicles.Service.Common;
 
 namespace Vehicles.Service;
-public class ServiceModule : Module /*AssemblyScanModule*/
+public class ServiceModule : Module
 {
-    //protected override Assembly Assembly => Assembly.GetExecutingAssembly();
-
     protected override void Load(ContainerBuilder builder)
     {
         builder.RegisterType<VehicleService>().As<IVehicleService>().InstancePerLifetimeScope();
-
-        //base.Load(builder);
     }
 }
 
