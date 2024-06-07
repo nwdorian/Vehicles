@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Vehicles.Common;
 using Vehicles.Common.Filters;
 using Vehicles.Model;
@@ -10,9 +11,12 @@ namespace Vehicles.WebApi.Controllers;
 public class VehiclesController : ControllerBase
 {
     private readonly IVehicleService _vehicleService;
-    public VehiclesController(IVehicleService vehicleService)
+    private readonly IMapper _mapper;
+
+    public VehiclesController(IVehicleService vehicleService, IMapper mapper)
     {
         _vehicleService = vehicleService;
+        _mapper = mapper;
     }
     [HttpGet]
     public async Task<ActionResult> GetAllAsync([FromQuery] VehicleFilter filter, [FromQuery] Paging paging, [FromQuery] Sorting sorting)
