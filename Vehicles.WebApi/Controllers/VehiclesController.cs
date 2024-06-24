@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Vehicles.Common;
 using Vehicles.Common.Filters;
@@ -6,6 +7,7 @@ using Vehicles.Model;
 using Vehicles.Service.Common;
 
 namespace Vehicles.WebApi.Controllers;
+[EnableCors("MyPolicy")]
 [Route("api/[controller]")]
 [ApiController]
 public class VehiclesController : ControllerBase
