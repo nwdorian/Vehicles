@@ -11,19 +11,20 @@ namespace Vehicles.Repository;
 public class VehicleRepository : IVehicleRepository
 {
     private readonly string _connectionString = "Host=localhost:5432;Username=postgres;Password=admin;Database=VehiclesDb";
-    public async Task<List<Vehicle>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting)
+    public async Task<ApiResponse<List<Vehicle>>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting)
     {
-        List<Vehicle> vehicles = new List<Vehicle>();
+        var response = new ApiResponse<List<Vehicle>>();
 
         try
         {
+            var vehicles = new List<Vehicle>();
+
             using var connection = new NpgsqlConnection(_connectionString);
             var command = ApplyFilter(filter, paging, sorting);
             command.Connection = connection;
 
             connection.Open();
-
-            var readerAsync = await command.ExecuteReaderAsync();
+            using var readerAsync = await command.ExecuteReaderAsync();
             if (readerAsync.HasRows)
             {
                 while (await readerAsync.ReadAsync())
@@ -31,13 +32,13 @@ public class VehicleRepository : IVehicleRepository
                     var vehicle = new Vehicle();
 
                     vehicle.Id = readerAsync.GetGuid(0);
-                    vehicle.MakeId = await readerAsync.IsDBNullAsync(1) ? null : readerAsync.GetGuid(1);
-                    vehicle.Model = await readerAsync.IsDBNullAsync(2) ? null : readerAsync.GetString(2);
+                    vehicle.MakeId = readerAsync.IsDBNull(1) ? null : readerAsync.GetGuid(1);
+                    vehicle.Model = readerAsync.IsDBNull(2) ? null : readerAsync.GetString(2);
                     vehicle.Color = readerAsync.GetString(3);
-                    vehicle.Year = await readerAsync.IsDBNullAsync(4) ? null : readerAsync.GetDateTime(4);
+                    vehicle.Year = readerAsync.IsDBNull(4) ? null : readerAsync.GetDateTime(4);
                     vehicle.ForSale = readerAsync.GetBoolean(5);
 
-                    if (!await readerAsync.IsDBNullAsync(1))
+                    if (!readerAsync.IsDBNull(1))
                     {
                         vehicle.Make = new Make();
 
@@ -49,75 +50,73 @@ public class VehicleRepository : IVehicleRepository
             }
             connection.Close();
 
-            return vehicles;
+            response.Success = true;
+            response.Data = vehicles;
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error: " + ex.Message);
+            response.Success = false;
+            response.Message = $"Error in Vehicle Repository GetAllAsync {ex.Message}";
         }
+        return response;
     }
 
-    public async Task<Vehicle?> GetAsync(Guid id)
+    public async Task<ApiResponse<Vehicle>> GetAsync(Guid id)
     {
+        var response = new ApiResponse<Vehicle>();
         try
         {
+            var vehicle = new Vehicle();
+
             using var connection = new NpgsqlConnection(_connectionString);
-
             var commandText = "SELECT * FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE v.\"Id\" = @Id";
-
-            await using var command = new NpgsqlCommand(commandText, connection);
+            using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
-            await connection.OpenAsync();
-
-            var readerAsync = await command.ExecuteReaderAsync();
-
+            connection.Open();
+            using var readerAsync = await command.ExecuteReaderAsync();
             if (readerAsync.HasRows)
             {
-
-                Vehicle vehicle = new Vehicle();
-
                 await readerAsync.ReadAsync();
 
                 vehicle.Id = readerAsync.GetGuid(0);
-                vehicle.MakeId = await readerAsync.IsDBNullAsync(1) ? null : readerAsync.GetGuid(1);
-                vehicle.Model = await readerAsync.IsDBNullAsync(2) ? null : readerAsync.GetString(2);
+                vehicle.MakeId = readerAsync.IsDBNull(1) ? null : readerAsync.GetGuid(1);
+                vehicle.Model = readerAsync.IsDBNull(2) ? null : readerAsync.GetString(2);
                 vehicle.Color = readerAsync.GetString(3);
-                vehicle.Year = await readerAsync.IsDBNullAsync(4) ? null : readerAsync.GetDateTime(4);
+                vehicle.Year = readerAsync.IsDBNull(4) ? null : readerAsync.GetDateTime(4);
                 vehicle.ForSale = readerAsync.GetBoolean(5);
 
-                if (!await readerAsync.IsDBNullAsync(1))
+                if (!readerAsync.IsDBNull(1))
                 {
                     vehicle.Make = new Make();
 
                     vehicle.Make.Id = readerAsync.GetGuid(6);
                     vehicle.Make.Name = readerAsync.GetString(7);
                 }
-
-                await connection.CloseAsync();
-                return vehicle;
             }
-
-            await connection.CloseAsync();
-            return null;
+            connection.Close();
+            response.Success = true;
+            response.Data = vehicle;
 
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error: " + ex.Message);
+            response.Success = false;
+            response.Message = $"Error in Vehicle Repository GetAsync {ex.Message}";
         }
+        return response;
     }
 
-    public async Task<bool> InsertAsync(Vehicle vehicle)
+    public async Task<ApiResponse<Vehicle>> InsertAsync(Vehicle vehicle)
     {
+        var response = new ApiResponse<Vehicle>();
+
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-
             var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
-
-            await using var command = new NpgsqlCommand(commandText, connection);
+            using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
@@ -126,22 +125,20 @@ public class VehicleRepository : IVehicleRepository
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year is null ? DBNull.Value : vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, vehicle.ForSale);
 
-            await connection.OpenAsync();
+            connection.Open();
+            await command.ExecuteNonQueryAsync();
+            connection.Close();
 
-            var commits = await command.ExecuteNonQueryAsync();
+            response.Success = true;
+            response.Data = vehicle;
 
-            await connection.CloseAsync();
-
-            if (commits == 0)
-            {
-                return false;
-            }
-            return true;
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error: " + ex.Message);
+            response.Success = false;
+            response.Message = $"Error in Vehicle Repository InsertAsync {ex.Message}";
         }
+        return response;
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -149,39 +146,32 @@ public class VehicleRepository : IVehicleRepository
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-
             var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
-
-            await using var command = new NpgsqlCommand(commandText, connection);
+            using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
 
-            await connection.OpenAsync();
+            connection.Open();
+            var rows = await command.ExecuteNonQueryAsync();
+            connection.Close();
 
-            var commits = await command.ExecuteNonQueryAsync();
+            return rows > 0;
 
-            await connection.CloseAsync();
-
-            if (commits == 0)
-            {
-                return false;
-            }
-            return true;
         }
-        catch (Exception ex)
+        catch
         {
-            throw new Exception("Data access error: " + ex.Message);
+            return false;
         }
     }
 
-    public async Task<bool> UpdateAsync(Guid id, Vehicle vehicle)
+    public async Task<ApiResponse<bool>> UpdateAsync(Guid id, Vehicle vehicle)
     {
+        var response = new ApiResponse<Vehicle>();
+
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-
             var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
-
             await using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
@@ -191,21 +181,17 @@ public class VehicleRepository : IVehicleRepository
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year is null ? DBNull.Value : vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, vehicle.ForSale);
 
-            await connection.OpenAsync();
+            connection.Open();
+            await command.ExecuteNonQueryAsync();
+            connection.Close();
 
-            var commits = await command.ExecuteNonQueryAsync();
-
-            await connection.CloseAsync();
-
-            if (commits == 0)
-            {
-                return false;
-            }
-            return true;
+            response.Success = true;
+            response.Data = vehicle;
         }
         catch (Exception ex)
         {
-            throw new Exception("Data access error: " + ex.Message);
+            response.Success = false;
+            response.Message = $"Error in Vehicle Repository InsertAsync {ex.Message}";
         }
     }
 
