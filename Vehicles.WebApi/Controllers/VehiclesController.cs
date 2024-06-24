@@ -5,6 +5,7 @@ using Vehicles.Common;
 using Vehicles.Common.Filters;
 using Vehicles.Model;
 using Vehicles.Service.Common;
+using Vehicles.WebApi.Models;
 
 namespace Vehicles.WebApi.Controllers;
 [EnableCors("MyPolicy")]
@@ -21,67 +22,75 @@ public class VehiclesController : ControllerBase
         _mapper = mapper;
     }
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync([FromQuery] VehicleFilter filter, [FromQuery] Paging paging, [FromQuery] Sorting sorting)
+    public async Task<IActionResult> GetAllAsync([FromQuery] VehicleFilter filter, [FromQuery] Paging paging, [FromQuery] Sorting sorting)
     {
-        var vehicles = await _vehicleService.GetAllAsync(filter, paging, sorting);
+        var response = await _vehicleService.GetAllAsync(filter, paging, sorting);
 
-        if (!vehicles.Any())
+        if (response.Success)
         {
-            return NotFound();
+            var vehicles = _mapper.Map<List<VehicleDTO>>(response.Data);
+            return Ok(vehicles);
         }
 
-        return Ok(vehicles);
+        return NotFound();
+
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetAsync(Guid id)
+    public async Task<IActionResult> GetAsync(Guid id)
     {
-        var vehicle = await _vehicleService.GetAsync(id);
+        var response = await _vehicleService.GetAsync(id);
 
-        if (vehicle is null)
+        if (response.Success)
         {
-            return NotFound();
+            var vehicle = _mapper.Map<VehicleDTO>(response.Data);
+            return Ok(vehicle);
         }
 
-        return Ok(vehicle);
+        return NotFound();
+
     }
 
     [HttpPost]
-    public async Task<ActionResult> InsertAsync(Vehicle vehicle)
+    public async Task<IActionResult> InsertAsync(VehicleDTO vehicleDto)
     {
-        var added = await _vehicleService.InsertAsync(vehicle);
+        var vehicle = _mapper.Map<Vehicle>(vehicleDto);
 
-        if (!added)
+        var response = await _vehicleService.InsertAsync(vehicle);
+
+        if (response.Success)
         {
-            return BadRequest();
+            return CreatedAtAction("GetyById", new { id = vehicle.Id }, vehicle);
         }
 
-        return Ok("Successfully added");
+        return BadRequest();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(Guid id)
+    public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        var deleted = await _vehicleService.DeleteAsync(id);
+        var response = await _vehicleService.DeleteAsync(id);
 
-        if (!deleted)
+        if (response)
         {
-            return BadRequest();
+            return Ok("Successfully deleted");
         }
+        return BadRequest("Id doesn't exist");
 
-        return Ok("Successfully deleted");
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateAsync(Guid id, Vehicle vehicle)
+    public async Task<IActionResult> UpdateAsync(Guid id, VehicleDTO vehicleDto)
     {
-        var updated = await _vehicleService.UpdateAsync(id, vehicle);
+        var vehicle = _mapper.Map<Vehicle>(vehicleDto);
 
-        if (!updated)
+        var response = await _vehicleService.UpdateAsync(id, vehicle);
+
+        if (response.Success)
         {
-            return BadRequest();
+            return Ok("Successfully updated!");
         }
+        return BadRequest();
 
-        return Ok("Successfully updated!");
     }
 }

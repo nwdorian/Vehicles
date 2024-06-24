@@ -5,9 +5,10 @@ using Vehicles.Model;
 namespace Vehicles.Service.Common;
 public interface IVehicleService
 {
+    Task<ApiResponse<List<Vehicle>>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting);
+    Task<ApiResponse<Vehicle>> GetAsync(Guid id);
+    Task<ApiResponse<Vehicle>> InsertAsync(Vehicle vehicle);
+    Task<ApiResponse<Vehicle>> UpdateAsync(Guid id, Vehicle vehicle);
     Task<bool> DeleteAsync(Guid id);
-    Task<List<Vehicle>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting);
-    Task<Vehicle?> GetAsync(Guid id);
-    Task<bool> InsertAsync(Vehicle vehicle);
-    Task<bool> UpdateAsync(Guid id, Vehicle vehicle);
+
 }

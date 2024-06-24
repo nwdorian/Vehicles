@@ -8,8 +8,7 @@ public class VehicleProfile : Profile
 {
     public VehicleProfile()
     {
-        CreateMap<Vehicle, VehicleGetRest>()
-        .ForMember(dest => dest.Make,
-        opt => opt.MapFrom(src => src.Make.Name));
+        CreateMap<Vehicle, VehicleDTO>().ReverseMap();
+        CreateMap<Make, MakeDTO>().ReverseMap();
     }
 }

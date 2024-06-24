@@ -20,7 +20,7 @@ public class VehicleRepository : IVehicleRepository
             var vehicles = new List<Vehicle>();
 
             using var connection = new NpgsqlConnection(_connectionString);
-            var command = ApplyFilter(filter, paging, sorting);
+            using var command = ApplyFilter(filter, paging, sorting);
             command.Connection = connection;
 
             connection.Open();
@@ -37,13 +37,20 @@ public class VehicleRepository : IVehicleRepository
                     vehicle.Color = readerAsync.GetString(3);
                     vehicle.Year = readerAsync.IsDBNull(4) ? null : readerAsync.GetDateTime(4);
                     vehicle.ForSale = readerAsync.GetBoolean(5);
+                    vehicle.IsActive = readerAsync.GetBoolean(6);
+                    vehicle.DateCreated = readerAsync.GetDateTime(7);
+                    vehicle.DateUpdated = readerAsync.GetDateTime(8);
 
                     if (!readerAsync.IsDBNull(1))
                     {
-                        vehicle.Make = new Make();
+                        var make = new Make();
 
-                        vehicle.Make.Id = readerAsync.GetGuid(6);
-                        vehicle.Make.Name = readerAsync.GetString(7);
+                        make.Id = readerAsync.GetGuid(9);
+                        make.Name = readerAsync.GetString(10);
+                        make.IsActive = readerAsync.GetBoolean(11);
+                        make.DateCreated = readerAsync.GetDateTime(12);
+                        make.DateUpdated = readerAsync.GetDateTime(13);
+                        vehicle.Make = make;
                     }
                     vehicles.Add(vehicle);
                 }
@@ -86,13 +93,20 @@ public class VehicleRepository : IVehicleRepository
                 vehicle.Color = readerAsync.GetString(3);
                 vehicle.Year = readerAsync.IsDBNull(4) ? null : readerAsync.GetDateTime(4);
                 vehicle.ForSale = readerAsync.GetBoolean(5);
+                vehicle.IsActive = readerAsync.GetBoolean(6);
+                vehicle.DateCreated = readerAsync.GetDateTime(7);
+                vehicle.DateUpdated = readerAsync.GetDateTime(8);
 
                 if (!readerAsync.IsDBNull(1))
                 {
-                    vehicle.Make = new Make();
+                    var make = new Make();
 
-                    vehicle.Make.Id = readerAsync.GetGuid(6);
-                    vehicle.Make.Name = readerAsync.GetString(7);
+                    make.Id = readerAsync.GetGuid(9);
+                    make.Name = readerAsync.GetString(10);
+                    make.IsActive = readerAsync.GetBoolean(11);
+                    make.DateCreated = readerAsync.GetDateTime(12);
+                    make.DateUpdated = readerAsync.GetDateTime(13);
+                    vehicle.Make = make;
                 }
             }
             connection.Close();
@@ -115,15 +129,18 @@ public class VehicleRepository : IVehicleRepository
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale)";
+            var commandText = "INSERT INTO \"Vehicle\" (\"Id\", \"MakeId\", \"Model\", \"Color\", \"Year\", \"ForSale\", \"IsActive\", \"DateCreated\", \"DateUpdated\") VALUES (@Id, @MakeId, @Model, @Color, @Year, @ForSale, @IsActive, @DateCreated, @DateUpdated)";
             using var command = new NpgsqlCommand(commandText, connection);
 
-            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, Guid.NewGuid());
+            command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.Id);
             command.Parameters.AddWithValue("@MakeId", NpgsqlTypes.NpgsqlDbType.Uuid, vehicle.MakeId is null ? DBNull.Value : vehicle.MakeId);
             command.Parameters.AddWithValue("@Model", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Model is null ? DBNull.Value : vehicle.Model);
             command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color!);
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year is null ? DBNull.Value : vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, vehicle.ForSale);
+            command.Parameters.AddWithValue("@IsActive", vehicle.IsActive);
+            command.Parameters.AddWithValue("@DateCreated", vehicle.DateCreated);
+            command.Parameters.AddWithValue("@DateUpdated", vehicle.DateUpdated);
 
             connection.Open();
             await command.ExecuteNonQueryAsync();
@@ -146,7 +163,7 @@ public class VehicleRepository : IVehicleRepository
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            var commandText = "DELETE FROM \"Vehicle\" WHERE \"Id\" = @Id";
+            var commandText = "UPDATE \"Vehicle\" SET \"IsActive\" = FALSE WHERE \"Id\" = @Id";
             using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
@@ -164,14 +181,14 @@ public class VehicleRepository : IVehicleRepository
         }
     }
 
-    public async Task<ApiResponse<bool>> UpdateAsync(Guid id, Vehicle vehicle)
+    public async Task<ApiResponse<Vehicle>> UpdateAsync(Guid id, Vehicle vehicle)
     {
         var response = new ApiResponse<Vehicle>();
 
         try
         {
             using var connection = new NpgsqlConnection(_connectionString);
-            var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale WHERE \"Id\"=@Id";
+            var commandText = "UPDATE \"Vehicle\" SET \"MakeId\"=@MakeId, \"Model\"=@Model, \"Color\"=@Color, \"Year\"=@Year, \"ForSale\"=@ForSale, \"DateUpdated\"=@DateUpdated WHERE \"Id\"=@Id";
             await using var command = new NpgsqlCommand(commandText, connection);
 
             command.Parameters.AddWithValue("@Id", NpgsqlTypes.NpgsqlDbType.Uuid, id);
@@ -180,6 +197,7 @@ public class VehicleRepository : IVehicleRepository
             command.Parameters.AddWithValue("@Color", NpgsqlTypes.NpgsqlDbType.Varchar, vehicle.Color!);
             command.Parameters.AddWithValue("@Year", NpgsqlTypes.NpgsqlDbType.TimestampTz, vehicle.Year is null ? DBNull.Value : vehicle.Year);
             command.Parameters.AddWithValue("@ForSale", NpgsqlTypes.NpgsqlDbType.Boolean, vehicle.ForSale);
+            command.Parameters.AddWithValue("@DateUpdated", vehicle.DateUpdated);
 
             connection.Open();
             await command.ExecuteNonQueryAsync();
@@ -193,13 +211,14 @@ public class VehicleRepository : IVehicleRepository
             response.Success = false;
             response.Message = $"Error in Vehicle Repository InsertAsync {ex.Message}";
         }
+        return response;
     }
 
     private NpgsqlCommand ApplyFilter(VehicleFilter filter, Paging paging, Sorting sorting)
     {
         var command = new NpgsqlCommand();
 
-        var stringBuilder = new StringBuilder("SELECT v.\"Id\", v.\"MakeId\", v.\"Model\", v.\"Color\", v.\"Year\", v.\"ForSale\", m.\"Id\", m.\"Name\" AS \"Make\" FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE 1=1");
+        var stringBuilder = new StringBuilder("SELECT v.\"Id\", v.\"MakeId\", v.\"Model\", v.\"Color\", v.\"Year\", v.\"ForSale\", v.\"IsActive\", v.\"DateCreated\", v.\"DateUpdated\", m.\"Id\", m.\"Name\" AS \"Make\", m.\"IsActive\", m.\"DateCreated\", m.\"DateUpdated\" FROM \"Vehicle\" AS v LEFT JOIN \"Make\" AS m ON v.\"MakeId\" = m.\"Id\" WHERE v.\"IsActive\" = TRUE");
         if (filter.MakeId is not null)
         {
             stringBuilder.Append(" AND \"MakeId\" = @MakeId");

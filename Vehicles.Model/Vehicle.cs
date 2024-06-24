@@ -10,5 +10,8 @@ public class Vehicle
     public string? Color { get; set; }
     public DateTime? Year { get; set; }
     public bool ForSale { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime DateCreated { get; set; }
+    public DateTime DateUpdated { get; set; }
     public Make? Make { get; set; }
 }

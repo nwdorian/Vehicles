@@ -13,18 +13,22 @@ public class VehicleService : IVehicleService
     {
         _vehicleRepository = vehicleRepository;
     }
-    public async Task<List<Vehicle>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting)
+    public async Task<ApiResponse<List<Vehicle>>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting)
     {
         return await _vehicleRepository.GetAllAsync(filter, paging, sorting);
     }
 
-    public async Task<Vehicle?> GetAsync(Guid id)
+    public async Task<ApiResponse<Vehicle>> GetAsync(Guid id)
     {
         return await _vehicleRepository.GetAsync(id);
     }
 
-    public async Task<bool> InsertAsync(Vehicle vehicle)
+    public async Task<ApiResponse<Vehicle>> InsertAsync(Vehicle vehicle)
     {
+        vehicle.Id = Guid.NewGuid();
+        vehicle.IsActive = true;
+        vehicle.DateCreated = DateTime.Now;
+        vehicle.DateUpdated = DateTime.Now;
         return await _vehicleRepository.InsertAsync(vehicle);
     }
 
@@ -33,8 +37,28 @@ public class VehicleService : IVehicleService
         return await _vehicleRepository.DeleteAsync(id);
     }
 
-    public async Task<bool> UpdateAsync(Guid id, Vehicle vehicle)
+    public async Task<ApiResponse<Vehicle>> UpdateAsync(Guid id, Vehicle vehicle)
     {
-        return await _vehicleRepository.UpdateAsync(id, vehicle);
+        var response = await _vehicleRepository.GetAsync(id);
+        if (!response.Success)
+        {
+            response.Message = "Vehicle not found";
+            return response;
+        }
+
+        var existingVehicle = response.Data;
+
+        existingVehicle.DateUpdated = DateTime.Now;
+
+        if (!string.IsNullOrEmpty(vehicle.Model))
+        {
+            existingVehicle.Model = vehicle.Model;
+        }
+        if (!string.IsNullOrEmpty(vehicle.Color))
+        {
+            existingVehicle.Color = vehicle.Color;
+        }
+
+        return await _vehicleRepository.UpdateAsync(id, existingVehicle);
     }
 }
