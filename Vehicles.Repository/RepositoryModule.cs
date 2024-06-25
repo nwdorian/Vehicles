@@ -6,6 +6,7 @@ public class RepositoryModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        builder.RegisterType<VehicleRepository>().As<IVehicleRepository>().InstancePerLifetimeScope();
+        builder.RegisterType<VehicleRepository>().As<IVehicleRepository>().InstancePerDependency();
+        builder.RegisterType<MakeRepository>().As<IMakeRepository>().InstancePerDependency();
     }
 }

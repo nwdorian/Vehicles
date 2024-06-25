@@ -8,10 +8,11 @@ namespace Vehicles.Service;
 public class VehicleService : IVehicleService
 {
     private readonly IVehicleRepository _vehicleRepository;
-
-    public VehicleService(IVehicleRepository vehicleRepository)
+    private readonly IMakeRepository _makeRepository;
+    public VehicleService(IVehicleRepository vehicleRepository, IMakeRepository makeRepository)
     {
         _vehicleRepository = vehicleRepository;
+        _makeRepository = makeRepository;
     }
     public async Task<ApiResponse<List<Vehicle>>> GetAllAsync(VehicleFilter filter, Paging paging, Sorting sorting)
     {
@@ -25,6 +26,23 @@ public class VehicleService : IVehicleService
 
     public async Task<ApiResponse<Vehicle>> InsertAsync(Vehicle vehicle)
     {
+        var response = await _makeRepository.GetByNameAsync(vehicle.Make.Name);
+        if (response.Success)
+        {
+            vehicle.MakeId = response.Data.Id;
+        }
+        else
+        {
+            var make = new Make();
+            make.Id = Guid.NewGuid();
+            make.Name = vehicle.Make.Name.ToTitleCase();
+            make.IsActive = true;
+            make.DateCreated = DateTime.Now;
+            make.DateUpdated = DateTime.Now;
+            await _makeRepository.InsertAsync(make);
+            vehicle.MakeId = make.Id;
+        }
+
         vehicle.Id = Guid.NewGuid();
         vehicle.IsActive = true;
         vehicle.DateCreated = DateTime.Now;
@@ -48,8 +66,7 @@ public class VehicleService : IVehicleService
 
         var existingVehicle = response.Data;
 
-        existingVehicle.DateUpdated = DateTime.Now;
-
+        existingVehicle.MakeId = vehicle.MakeId;
         if (!string.IsNullOrEmpty(vehicle.Model))
         {
             existingVehicle.Model = vehicle.Model;
@@ -58,6 +75,9 @@ public class VehicleService : IVehicleService
         {
             existingVehicle.Color = vehicle.Color;
         }
+        existingVehicle.Year = vehicle.Year;
+        existingVehicle.ForSale = vehicle.ForSale;
+        existingVehicle.DateUpdated = DateTime.Now;
 
         return await _vehicleRepository.UpdateAsync(id, existingVehicle);
     }

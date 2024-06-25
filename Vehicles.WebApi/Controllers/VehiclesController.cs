@@ -60,7 +60,7 @@ public class VehiclesController : ControllerBase
 
         if (response.Success)
         {
-            return CreatedAtAction("GetyById", new { id = vehicle.Id }, vehicle);
+            return CreatedAtAction("Get", new { id = vehicle.Id }, vehicleDto);
         }
 
         return BadRequest();
@@ -90,7 +90,7 @@ public class VehiclesController : ControllerBase
         {
             return Ok("Successfully updated!");
         }
-        return BadRequest();
+        return BadRequest(response.Message);
 
     }
 }

@@ -7,7 +7,7 @@ using Vehicles.WebApi;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
-string pathToAssemblies = @"C:\Users\Dorian\Documents\GitHub\Vehicles\Vehicles.WebApi\bin\Debug\net8.0";
+string pathToAssemblies = @"C:\Users\student\Documents\Dorian\P05\Vehicles\Vehicles.WebApi\bin\Debug\net8.0";
 var allFiles = Directory.GetFiles(pathToAssemblies, "*.dll");
 var assemblies = allFiles.Select(file => Assembly.LoadFrom(file)).ToArray();
 
