@@ -1,4 +1,4 @@
-﻿namespace Vehicles.WebApi.Models;
+﻿namespace Vehicles.WebApi.DTOs.Make;
 
 public class MakeDTO
 {

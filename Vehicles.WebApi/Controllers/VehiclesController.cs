@@ -5,7 +5,7 @@ using Vehicles.Common;
 using Vehicles.Common.Filters;
 using Vehicles.Model;
 using Vehicles.Service.Common;
-using Vehicles.WebApi.Models;
+using Vehicles.WebApi.DTOs.Vehicle;
 
 namespace Vehicles.WebApi.Controllers;
 [EnableCors("MyPolicy")]
@@ -28,7 +28,7 @@ public class VehiclesController : ControllerBase
 
         if (response.Success)
         {
-            var vehicles = _mapper.Map<List<VehicleDTO>>(response.Data);
+            var vehicles = _mapper.Map<List<VehicleReadDTO>>(response.Data);
             return Ok(vehicles);
         }
 
@@ -43,7 +43,7 @@ public class VehiclesController : ControllerBase
 
         if (response.Success)
         {
-            var vehicle = _mapper.Map<VehicleDTO>(response.Data);
+            var vehicle = _mapper.Map<VehicleReadDTO>(response.Data);
             return Ok(vehicle);
         }
 
@@ -52,7 +52,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> InsertAsync(VehicleDTO vehicleDto)
+    public async Task<IActionResult> InsertAsync(VehicleCreateDTO vehicleDto)
     {
         var vehicle = _mapper.Map<Vehicle>(vehicleDto);
 
@@ -60,7 +60,7 @@ public class VehiclesController : ControllerBase
 
         if (response.Success)
         {
-            return CreatedAtAction("Get", new { id = vehicle.Id }, vehicleDto);
+            return CreatedAtAction("Get", new { id = vehicle.Id }, _mapper.Map<VehicleReadDTO>(response.Data));
         }
 
         return BadRequest();
@@ -80,7 +80,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAsync(Guid id, VehicleDTO vehicleDto)
+    public async Task<IActionResult> UpdateAsync(Guid id, VehicleCreateDTO vehicleDto)
     {
         var vehicle = _mapper.Map<Vehicle>(vehicleDto);
 

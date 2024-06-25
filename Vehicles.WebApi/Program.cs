@@ -1,24 +1,15 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
-using System.Reflection;
 using Vehicles.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
-string pathToAssemblies = @"C:\Users\student\Documents\Dorian\P05\Vehicles\Vehicles.WebApi\bin\Debug\net8.0";
-var allFiles = Directory.GetFiles(pathToAssemblies, "*.dll");
-var assemblies = allFiles.Select(file => Assembly.LoadFrom(file)).ToArray();
+
 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-    .ConfigureContainer<ContainerBuilder>(builder =>
-    {
-        foreach (var assembly in assemblies)
-        {
-            builder.RegisterAssemblyModules(assembly);
-        }
-    });
+    .ConfigureContainer<ContainerBuilder>(builder => builder.RegisterAutoFacModules());
 
 var config = new MapperConfiguration(cfg =>
 {

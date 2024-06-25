@@ -1,6 +1,8 @@
-﻿namespace Vehicles.WebApi.Models;
+﻿using Vehicles.WebApi.DTOs.Make;
 
-public class VehicleDTO
+namespace Vehicles.WebApi.DTOs.Vehicle;
+
+public class VehicleReadDTO
 {
     public Guid Id { get; set; }
     public string? Model { get; set; }

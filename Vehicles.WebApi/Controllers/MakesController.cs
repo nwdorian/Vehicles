@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Vehicles.Service.Common;
-using Vehicles.WebApi.Models;
+using Vehicles.WebApi.DTOs.Make;
 
 namespace Vehicles.WebApi.Controllers;
 
