@@ -66,7 +66,6 @@ public class VehicleService : IVehicleService
 
         var existingVehicle = response.Data;
 
-        existingVehicle.MakeId = vehicle.MakeId;
         if (!string.IsNullOrEmpty(vehicle.Model))
         {
             existingVehicle.Model = vehicle.Model;

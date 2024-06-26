@@ -96,7 +96,7 @@ public class MakeRepository : IMakeRepository
             var commandText = "SELECT \"Id\",\"Name\", \"IsActive\", \"DateCreated\", \"DateUpdated\" FROM \"Make\" WHERE \"Name\" = @Name";
             using var command = new NpgsqlCommand(commandText, connection);
 
-            command.Parameters.AddWithValue("@Name", NpgsqlTypes.NpgsqlDbType.Uuid, name);
+            command.Parameters.AddWithValue("@Name", name);
 
             connection.Open();
             using var readerAsync = await command.ExecuteReaderAsync();
